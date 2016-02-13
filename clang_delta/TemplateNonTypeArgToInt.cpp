@@ -105,16 +105,13 @@ void TemplateNonTypeArgToInt::HandleTranslationUnit(ASTContext &Ctx)
   }
 
   Ctx.getDiagnostics().setSuppressAllDiagnostics(false);
-  if (TheExpr) {
+  if (TheExpr)
     RewriteHelper->replaceExpr(TheExpr, IntString);
-  }
-  else if (TheValueDecl) {
-    RewriteHelper->replaceValueDecl(TheValueDecl,
-                                    "int " + TheValueDecl->getNameAsString());
-  }
-  else {
-    TransAssert(0 && "No valid targets!");
-  }
+  else if (TheValueDecl)
+     RewriteHelper->replaceValueDecl(TheValueDecl,
+                                     "int " + TheValueDecl->getNameAsString());
+  else
+     TransAssert(0 && "No valid targets!");
 
   if (Ctx.getDiagnostics().hasErrorOccurred() ||
       Ctx.getDiagnostics().hasFatalErrorOccurred())
