@@ -600,7 +600,8 @@ sub delta_pass ($) {
 		chdir $orig_dir or die;
 		$stopped = 1;
 	    } else {
-		system "diff $fn $variant" if ($PRINT_DIFF);
+		print "$delta_method,$variant,$delta_arg,$state \n" if ($PRINT_DIFF);
+		system "diff -u $fn $variant" if ($PRINT_DIFF);
 		if (compare ($fn, $variant) == 0) {
 		    report_pass_bug($delta_method, $delta_arg,
 				    "pass failed to modify the variant");
