@@ -158,7 +158,10 @@ that supports building C-Reduce against the current LLVM SVN head.
 
 ###Building with current LLVM trunk and cmake:
 ```
-cmake /path/to/src -DCMAKE_BUILD_TYPE=Debug -DTOPFORMFLAT=/path/to/delta-2006.08.03/ -DCMAKE_INSTALL_PREFIX=/path/to/inst/folder/ -DLLVM_DIR=/path/to/debug/installation/of/llvm/share/llvm/cmake/
+cmake /path/to/src -DCMAKE_BUILD_TYPE=Debug \
+  -DTOPFORMFLAT=/path/to/delta-2006.08.03/ \
+  -DCMAKE_INSTALL_PREFIX=/path/to/inst/folder/ \
+  -DLLVM_DIR=/path/to/debug/installation/of/llvm/share/llvm/cmake/
 make -j4
 make install
 ```
