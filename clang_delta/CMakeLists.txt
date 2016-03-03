@@ -23,6 +23,15 @@ add_definitions(${LLVM_DEFINITIONS})
 set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS HAVE_CONFIG_H
   $<$<CONFIG:Release>:NDEBUG> $<$<CONFIG:Debug>:ENABLE_TRANS_ASSERT>)
 include_directories(${LLVM_INCLUDE_DIRS})
+
+# Add Clang's include paths if this is a debug build and they are not under
+# the same path as LLVM's. FIXME: Find a better way to do this.
+if (EXISTS ${LLVM_BUILD_BINARY_DIR}/tools/clang/include)
+  include_directories(${LLVM_BUILD_BINARY_DIR}/tools/clang/include)
+endif()
+if (EXISTS ${LLVM_BUILD_MAIN_SRC_DIR}/tools/clang/include)
+  include_directories(${LLVM_BUILD_MAIN_SRC_DIR}/tools/clang/include)
+endif()
 include_directories(${CMAKE_BINARY_DIR})
 link_directories(${LLVM_LIBRARY_DIRS})
 
@@ -204,3 +213,5 @@ target_link_libraries(clang_delta ${CLANG_LIBS} ${LLVM_LIBS})
 install(TARGETS clang_delta
   RUNTIME DESTINATION "bin"
 )
+
+add_subdirectory(test)

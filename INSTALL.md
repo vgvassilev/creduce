@@ -162,3 +162,7 @@ cmake /path/to/src -DCMAKE_BUILD_TYPE=Debug -DTOPFORMFLAT=/path/to/delta-2006.08
 make -j4
 make install
 ```
+
+In order to enable LIT testing support of clang_delta one needs
+ `-DLLVM_DIR=/path/to/llvm/build/folder/share/llvm/cmake`. Then type
+ `make check-clangdelta` to run the test suite.
