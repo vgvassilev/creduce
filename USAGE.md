@@ -37,7 +37,8 @@ cat included_files.txt | xargs -I$ cp --parents $ includes/
 
 ```
 #!/bin/bash
-gcc -fsyntax-only --sysroot=./includes/ T.cpp
+gcc -fsyntax-only --sysroot=./includes/ T.cpp &&  \
+grep -q "std::basic_string<char> myStr" T.cpp
 ```
 
 Don't forget to use the --sysroot option, which tells the compiler to switch its
