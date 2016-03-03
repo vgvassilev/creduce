@@ -1,4 +1,4 @@
-//RUN: %clang_delta --transformation=remove-trivial-base-template --counter=1 %s | FileCheck %s
+//RUN: %clangdelta --transformation=remove-trivial-base-template --counter=1 %s | FileCheck %s
 namespace std {
   template <typename T, typename U> class iterator{};
 }
