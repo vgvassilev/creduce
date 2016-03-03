@@ -55,7 +55,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/creduce.in
 #  )
 
 # Prepare creduce_config.pm
-set(bindir "${CMAKE_INSTALL_PREFIX}")
+set(bindir "${CMAKE_INSTALL_PREFIX}/bin")
 set(libexecdir "${CMAKE_INSTALL_PREFIX}/bin")
 set(PACKAGE_BUGREPORT "${creduce_PACKAGE_BUGREPORT}")
 set(PACKAGE_NAME "${creduce_PACKAGE_NAME}")
