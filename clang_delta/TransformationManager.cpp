@@ -18,6 +18,7 @@
 
 #include "clang/Basic/Diagnostic.h"
 #include "clang/Basic/TargetInfo.h"
+#include "clang/Basic/Version.h"
 #include "clang/Lex/Preprocessor.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Parse/ParseAST.h"
@@ -169,9 +170,13 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
   ClangInstance->setASTConsumer(
     std::unique_ptr<ASTConsumer>(CurrentTransformationImpl));
   Preprocessor &PP = ClangInstance->getPreprocessor();
-  PP.getBuiltinInfo().InitializeBuiltins(PP.getIdentifierTable(),
+#if CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR == 7
+    PP.getBuiltinInfo().InitializeBuiltins(PP.getIdentifierTable(),
                                          PP.getLangOpts());
-
+#else
+  PP.getBuiltinInfo().initializeBuiltins(PP.getIdentifierTable(),
+                                         PP.getLangOpts());
+#endif
   if (!ClangInstance->InitializeSourceManager(FrontendInputFile(SrcFileName, IK))) {
     ErrorMsg = "Cannot open source file!";
     return false;
