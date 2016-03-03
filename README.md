@@ -22,7 +22,12 @@ page:
 ##Installation:
 
 
-See the [installation manual](INSTALL.md)
+See the [installation manual](INSTALL.md).
+
+##Usage Examples:
+
+
+See few usage scenarios [here](USAGE.md).
 
 
 ##Notes:

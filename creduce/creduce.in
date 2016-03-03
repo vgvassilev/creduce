@@ -31,6 +31,8 @@ use Regexp::Common;
 use File::Spec;
 use File::Temp;
 use File::Copy;
+use File::Find;
+use File::Path qw(make_path);
 
 # Load and use the Term::ReadKey module if available, don't complain otherwise
 my $SKIP_KEY_OFF = 0;
@@ -270,7 +272,9 @@ sub delta_test () {
 
 sub copy_files_here() {
     foreach my $f (@toreduce) {
-	File::Copy::copy($f,$fileonly{$f}) or die;
+        my $relf = File::Spec->abs2rel($f, $orig_dir);
+        make_path(dirname($relf));
+        File::Copy::copy($f, $relf) or die $!;
     }
 }
 
@@ -579,9 +583,13 @@ sub delta_pass ($) {
 	    my $tmpdir = make_tmpdir();
 	    chdir $tmpdir or die;
 	    copy_files_here();
+
+            # Make the file path relative to the original dir, so that we can
+            # copy it.
+            my $relf = File::Spec->abs2rel($fn, $orig_dir);
 	    # creating the variant is done in the parent, it's only
 	    # testing variants that happens in parallel
-	    my $variant = File::Spec->catfile($tmpdir, $fileonly{$fn});
+	    my $variant = File::Spec->catfile($tmpdir, $relf);
 	    (my $delta_res, $state) = call_transform ($delta_method,$variant,$delta_arg,$state);
 	    if ($delta_res != $OK && $delta_res != $STOP) {
 		report_pass_bug($delta_method, $delta_arg,
@@ -652,7 +660,7 @@ sub delta_pass ($) {
 		# here is where we actually accept the new result: we
 		# need to grab both the file and the pass state
 		$state = call_advance_on_success ($delta_method, $variant, $delta_arg, $newsh);
-		File::Copy::copy ($variant, $fn) or die;
+		File::Copy::copy ($variant, $fn) or die $!;
 
 		# we don't want to be stopped by a speculative transformation
 		$stopped = 0;
@@ -974,8 +982,17 @@ check_file_attributes("test script", $test, "efrx");
 
 while (@ARGV) {
     my $f = File::Spec->rel2abs(shift @ARGV);
-    push @toreduce, $f;
-    check_file_attributes("file", $f, "efrw");
+    # Expand folders into files.
+    if (-d $f) {
+        find(sub {push @toreduce, $File::Find::name if -f}, $f);
+    }
+    else {
+        push @toreduce, $f;
+    }
+
+    foreach my $f (@toreduce) {
+        check_file_attributes("file", $f, "efrw");
+    }
 }
 
 sub bysize {
