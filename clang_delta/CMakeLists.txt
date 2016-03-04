@@ -85,6 +85,7 @@ set(TRANSFORMATION_HEADERS
   RemoveArray.h
   RemoveBaseClass.h
   RemoveCtorInitializer.h
+  RemoveDecl.h
   RemoveEnumMemberValue.h
   RemoveNamespace.h
   RemoveNestedFunction.h
@@ -159,6 +160,7 @@ set(TRANSFORMATION_SOURCES
   RemovePointer.cpp
   RemoveTrivialBaseTemplate.cpp
   RemoveUnresolvedBase.cpp
+  RemoveDecl.cpp
   RemoveUnusedEnumMember.cpp
   RemoveUnusedFunction.cpp
   RemoveUnusedOuterClass.cpp

@@ -717,6 +717,7 @@ my @all_methods = (
     { "name" => "pass_blank",    "arg" => "0",                                      "first_pass_pri" =>  1, },
     { "name" => "pass_clang_binsrch",    "arg" => "replace-function-def-with-decl", "first_pass_pri" =>  2, },
     { "name" => "pass_clang_binsrch",    "arg" => "remove-unused-function",         "first_pass_pri" =>  3, },
+    { "name" => "pass_clang_binsrch",    "arg" => "remove-decl",                    "first_pass_pri" =>  4, },
 
     { "name" => "pass_lines",    "arg" => "0",                      "pri" => 410,  "first_pass_pri" =>  20,   "last_pass_pri" => 999, },
     { "name" => "pass_lines",    "arg" => "0",                                     "first_pass_pri" =>  21, },
@@ -733,6 +734,7 @@ my @all_methods = (
 
     { "name" => "pass_clang_binsrch",    "arg" => "replace-function-def-with-decl", "first_pass_pri" => 33, },
     { "name" => "pass_clang_binsrch",    "arg" => "remove-unused-function",         "first_pass_pri" => 34, },
+    { "name" => "pass_clang_binsrch",    "arg" => "remove-decl",                    "first_pass_pri" => 35, },
 
     { "name" => "pass_lines",    "arg" => "0",                                     "first_pass_pri" =>  35, },
     { "name" => "pass_lines",    "arg" => "1",                                     "first_pass_pri" =>  36, },
@@ -776,6 +778,7 @@ my @all_methods = (
     { "name" => "pass_clang",    "arg" => "replace-callexpr",       "pri" => 218,  "first_pass_pri" => 50, },
     { "name" => "pass_clang",    "arg" => "simplify-callexpr",      "pri" => 219,  "first_pass_pri" => 51, },
     { "name" => "pass_clang",    "arg" => "remove-unused-function", "pri" => 220,  "first_pass_pri" => 40, },
+    { "name" => "pass_clang",    "arg" => "remove-decl",            "pri" => 211,  "first_pass_pri" => 41, },
     { "name" => "pass_clang",    "arg" => "remove-unused-enum-member", "pri" => 221, "first_pass_pri" => 51, },
     { "name" => "pass_clang",    "arg" => "remove-enum-member-value", "pri" => 222, "first_pass_pri" => 52, },
     { "name" => "pass_clang",    "arg" => "remove-unused-var",      "pri" => 223,  "first_pass_pri" => 53, },

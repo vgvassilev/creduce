@@ -998,9 +998,13 @@ void RewriteUtils::getStringBetweenLocs(std::string &Str,
 {
   const char *StartBuf = SrcManager->getCharacterData(LocStart);
   const char *EndBuf = SrcManager->getCharacterData(LocEnd);
-  TransAssert(StartBuf < EndBuf);
+  // EmptyDecls have no length
+  TransAssert(StartBuf <= EndBuf);
   size_t Off = EndBuf - StartBuf;
-  Str.assign(StartBuf, Off);
+  if (Off)
+    Str.assign(StartBuf, Off);
+  else
+    Str = "<empty decl>";
 }
 
 void RewriteUtils::getStringBetweenLocsAfterStart(std::string &Str, 
