@@ -1461,10 +1461,15 @@ bool RewriteUtils::removeFieldDecl(const FieldDecl *FD)
 bool RewriteUtils::removeDecl(const Decl *D)
 {
   SourceRange Range = D->getSourceRange();
-  TransAssert((TheRewriter->getRangeSize(Range) != -1) && 
-              "Bad UsingDecl SourceRange!");
+  TransAssert((TheRewriter->getRangeSize(Range) != -1)
+              && "Bad SourceRange!");
+
   SourceLocation StartLoc = Range.getBegin();
-  SourceLocation EndLoc = getEndLocationUntil(Range, ';');
+  SourceLocation EndLoc = Range.getEnd();
+  if (D->hasBody())
+    EndLoc = D->getBodyRBrace();
+  if (const TagDecl *TD = dyn_cast<TagDecl>(D))
+    EndLoc = TD->getRBraceLoc();
   return !(TheRewriter->RemoveText(SourceRange(StartLoc, EndLoc)));
 }
 
