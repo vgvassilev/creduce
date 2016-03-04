@@ -37,9 +37,16 @@ cat included_files.txt | xargs -I$ rsync -R $ includes/
 
 ```
 #!/bin/bash
+export CREDUCE_LANG=CXX
 gcc -fsyntax-only --sysroot=./includes/ T.cpp &&  \
 grep -q "std::basic_string<char> myStr" T.cpp
 ```
+
+We export the CREDUCE_LANG=CXX to tell creduce that all reductions should happen
+in C++ mode. Without this setting creduce (or more precisely clang_delta) would
+try to guess the language by looking at the file extension. This is not enough
+when reducing header files (coming from STL, etc) because mislead clang_delta to
+switch to C mode, making the reduction very slow and most of the time impossible.
 
 Don't forget to use the --sysroot option, which tells the compiler to switch its
 includes to the local ones, which we will reduce.

@@ -83,24 +83,36 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
 
   ClangInstance = new CompilerInstance();
   assert(ClangInstance);
-  
-  ClangInstance->createDiagnostics();
 
+  ClangInstance->createDiagnostics();
   CompilerInvocation &Invocation = ClangInstance->getInvocation();
-  InputKind IK = FrontendOptions::getInputKindForExtension(
+
+  InputKind IK;
+  if (const char *Lang = getenv("CREDUCE_LANG")) {
+    if (!strcmp(Lang, "CXX"))
+      IK = IK_CXX;
+    else if (!strcmp(Lang, "C"))
+      IK = IK_C;
+  }
+  else { // guess which is the language
+    IK = FrontendOptions::getInputKindForExtension(
         StringRef(SrcFileName).rsplit('.').second);
+  }
+  std::vector<const char*> Args;
   if ((IK == IK_C) || (IK == IK_PreprocessedC)) {
     Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_C);
   }
   else if ((IK == IK_CXX) || (IK == IK_PreprocessedCXX)) {
     // ISSUE: it might cause some problems when building AST
-    // for a function which has a non-declared callee, e.g., 
-    // It results an empty AST for the caller. 
+    // for a function which has a non-declared callee, e.g.,
+    // It results an empty AST for the caller.
+
+    Args.push_back("-x");
+    Args.push_back("c++");
     Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_CXX);
   }
   else if(IK == IK_OpenCL) {
     //Commandline parameters
-    std::vector<const char*> Args;
     Args.push_back("-x");
     Args.push_back("cl");
     Args.push_back("-Dcl_clang_storage_class_specifiers");
@@ -119,15 +131,16 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
     Args.push_back("clc/clc.h");
     Args.push_back("-fno-builtin");
 
-    CompilerInvocation::CreateFromArgs(Invocation,
-                                       &Args[0], &Args[0] + Args.size(),
-                                       ClangInstance->getDiagnostics());
     Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_OpenCL);
   }
   else {
     ErrorMsg = "Unsupported file type!";
     return false;
   }
+
+  CompilerInvocation::CreateFromArgs(Invocation, &Args[0],
+                                     &Args[0] + Args.size(),
+                                     ClangInstance->getDiagnostics());
 
   TargetOptions &TargetOpts = ClangInstance->getTargetOpts();
 
