@@ -14,14 +14,15 @@
 
 #include "Transformation.h"
 
-#include <sstream>
-
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/Lex/Lexer.h"
 #include "clang/Basic/SourceManager.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/ADT/SmallString.h"
+
+#include <regex>
+#include <sstream>
 
 using namespace clang;
 
@@ -94,12 +95,35 @@ void Transformation::Initialize(ASTContext &context)
 
 void Transformation::outputTransformedSource(llvm::raw_ostream &OutStream)
 {
+  //for (auto I = TheRewriter.buffer_begin(), E = TheRewriter.buffer_end(); I != E; ++I) {
+  //for (auto BufI = I->begin(), BufE = I->end(); BufI < BufE; ++BufI)
+  // RWBuf is non-empty upon any rewrites
+  // OutStream << std::string(I->second.begin(), I->second.end());
+  //}
+
+  //FIXME: This will be an issue once we switch to single TU.
   FileID MainFileID = SrcManager->getMainFileID();
   const RewriteBuffer *RWBuf = TheRewriter.getRewriteBufferFor(MainFileID);
 
   // RWBuf is non-empty upon any rewrites
   TransAssert(RWBuf && "Empty RewriteBuffer!");
-  OutStream << std::string(RWBuf->begin(), RWBuf->end());
+  std::string output(RWBuf->begin(), RWBuf->end());
+  if (output.empty())
+    return;
+
+  // Remove the lines containing LIT special keywords. This needs to be done
+  // because LIT would think the expected output as seen output. For instance:
+  // 'CHECK-NOT: string' will always fail if we don't filter it.
+  std::stringstream ss(output);
+  std::string to;
+  while(std::getline(ss, to)) {
+    if (std::regex_match(to, std::regex("//CHECK(:|-).*")))
+      continue;
+    if (std::regex_match(to, std::regex("//RUN:.*")))
+      continue;
+
+    OutStream << to << '\n';
+  }
   OutStream.flush();
 }
 
