@@ -23,14 +23,14 @@ gcc -fsyntax-only  T.cpp -H
 ```
 or
 ```
-clang -Xclang -header-include-file -Xclang included_files.txt -fsyntax-only T.cpp && sed -i '/<command line>/d' included_files.txt
+clang -Xclang -header-include-file -Xclang included_files.txt -fsyntax-only T.cpp && sed -i.bak '/<command line>/d' included_files.txt
 ```
 
 or using the script `localize_headers`.
 
 3. Copy the system headers locally.
 ```
-cat included_files.txt | xargs -I$ cp --parents $ includes/
+cat included_files.txt | xargs -I$ rsync -R $ includes/
 ```
 
 4. Define our interestingness test (test.sh).
@@ -48,3 +48,4 @@ includes to the local ones, which we will reduce.
 
 ```
 creduce --tidy test.sh T.cpp includes/
+```
