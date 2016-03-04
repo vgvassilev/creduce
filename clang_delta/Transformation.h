@@ -151,6 +151,8 @@ public:
     return false;
   }
 
+  bool isInIncludedFile(const clang::Decl *D) const;
+
 protected:
 
   typedef llvm::SmallVector<unsigned int, 10> IndexVector;
@@ -271,8 +273,6 @@ protected:
   unsigned getNumExplicitDecls(const clang::CXXRecordDecl *CXXRD);
 
   bool isInIncludedFile(clang::SourceLocation Loc) const;
-
-  bool isInIncludedFile(const clang::Decl *D) const;
 
   bool isInIncludedFile(const clang::Stmt *S) const;
 
