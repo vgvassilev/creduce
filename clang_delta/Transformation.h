@@ -137,7 +137,7 @@ public:
             (TransError == TransToCounterTooBigError));
   }
 
-  std::string &getDescription() {
+  const std::string &getDescription() {
     return DescriptionString;
   }
 
