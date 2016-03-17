@@ -18,12 +18,14 @@
 #include <sstream>
 #include "clang/Basic/SourceManager.h"
 #include "clang/Rewrite/Core/Rewriter.h"
+#include "clang/AST/ASTContext.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/DeclCXX.h"
 #include "clang/AST/DeclTemplate.h"
 #include "clang/AST/Expr.h"
 #include "clang/AST/TypeLoc.h"
 #include "clang/AST/ExprCXX.h"
+#include "clang/Lex/Lexer.h"
 
 using namespace clang;
 using namespace llvm;
@@ -1470,6 +1472,17 @@ bool RewriteUtils::removeDecl(const Decl *D)
     EndLoc = D->getBodyRBrace();
   if (const TagDecl *TD = dyn_cast<TagDecl>(D))
     EndLoc = TD->getRBraceLoc();
+
+  // Check for a ; after the declaration.
+  Token Tok;
+  const ASTContext &C = D->getASTContext();
+  const SourceManager &SM = C.getSourceManager();
+  SourceLocation TokStartLoc = EndLoc.getLocWithOffset(1);
+  bool success = !Lexer::getRawToken(TokStartLoc, Tok, SM, C.getLangOpts(),
+                                     /*IgnoreWhiteSpace*/true);
+  if (success && Tok.is(tok::semi))
+     EndLoc = Tok.getEndLoc();
+
   return !(TheRewriter->RemoveText(SourceRange(StartLoc, EndLoc)));
 }
 
