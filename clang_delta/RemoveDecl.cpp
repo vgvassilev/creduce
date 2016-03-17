@@ -76,7 +76,8 @@ void RemoveDecl::HandleTranslationUnit(ASTContext &Ctx)
   TransAssert(Decls.size() && "NULL TheDecl!");
   Decl* D = nullptr;
   if (ToCounter < TransformationCounter) {
-    D = Decls[TransformationCounter-1];
+    // Removing the last decl in the TU gives more chances to success.
+    D = Decls[Decls.size() - TransformationCounter];
     RewriteHelper->removeDecl(D);
     //std::string s;
     //auto R = D->getSourceRange();
