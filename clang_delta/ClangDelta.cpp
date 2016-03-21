@@ -206,9 +206,6 @@ int main(int argc, char **argv)
     Die(ErrorMsg);
   }
 
-  if (TransMgr->getQueryInstanceFlag()) 
-    TransMgr->outputNumTransformationInstances();
-
   TransformationManager::Finalize();
   return 0;
 }

@@ -92,10 +92,6 @@ public:
     QueryInstanceOnly = Flag;
   }
 
-  bool getQueryInstanceFlag() {
-    return QueryInstanceOnly;
-  }
-
   bool initializeCompilerInstance(std::string &ErrorMsg);
 
   void outputNumTransformationInstances();

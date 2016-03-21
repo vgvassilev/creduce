@@ -269,6 +269,7 @@ bool TransformationManager::doTransformation(const ClangDeltaInvocationOptions &
   ClangInstance->getDiagnosticClient().EndSourceFile();
 
   if (QueryInstanceOnly) {
+    outputNumTransformationInstances();
     return true;
   }
 
