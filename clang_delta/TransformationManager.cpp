@@ -76,13 +76,7 @@ bool TransformationManager::isOpenCLLangOpt()
 
 bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
 {
-  if (ClangInstance) {
-    ErrorMsg = "CompilerInstance has been initialized!";
-    return false;
-  }
-
-  ClangInstance = new CompilerInstance();
-  assert(ClangInstance);
+  ClangInstance.reset(new CompilerInstance());
 
   ClangInstance->createDiagnostics();
   CompilerInvocation &Invocation = ClangInstance->getInvocation();
@@ -216,8 +210,6 @@ void TransformationManager::Finalize()
   }
   if (Instance->TransformationsMapPtr)
     delete Instance->TransformationsMapPtr;
-
-  delete Instance->ClangInstance;
 
   delete Instance;
   Instance = NULL;
@@ -391,7 +383,6 @@ TransformationManager::TransformationManager()
     SrcFileName(""),
     OutputFileName(""),
     CurrentTransName(""),
-    ClangInstance(NULL),
     QueryInstanceOnly(false)
 {
   // Nothing to do
@@ -401,4 +392,3 @@ TransformationManager::~TransformationManager()
 {
   // Nothing to do
 }
-

@@ -132,7 +132,7 @@ private:
 
   std::string CurrentTransName;
 
-  clang::CompilerInstance *ClangInstance;
+  std::unique_ptr<clang::CompilerInstance> ClangInstance;
 
   bool QueryInstanceOnly;
 
