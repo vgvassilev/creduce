@@ -317,9 +317,8 @@ bool TransformationManager::verify(std::string &ErrorMsg, int &ErrorCode)
   return true;
 }
 
-void TransformationManager::registerTransformation(
-       const char *TransName, 
-       Transformation *TransImpl)
+void TransformationManager::registerTransformation(const char *TransName,
+                                                   Transformation *TransImpl)
 {
   if (!TransformationManager::TransformationsMapPtr) {
     TransformationManager::TransformationsMapPtr = 
