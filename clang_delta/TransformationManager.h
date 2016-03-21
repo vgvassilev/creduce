@@ -22,6 +22,20 @@ namespace clang {
   class CompilerInstance;
 }
 
+///\brief Keeps track of the way clang_delta was invoked.
+///
+struct ClangDeltaInvocationOptions {
+  std::string TransformationName; //< The transformation name.
+  bool IsQueryInstances; //< If we are in simulation or transformation mode.
+  unsigned Counter; //< How many transformations we will make.
+  unsigned ToCounter; //< In case of multi transformations, the end of range.
+  std::string SourceFileName; //< The transformed file.
+  std::string OutputFileName; //< The result file.
+  ClangDeltaInvocationOptions()
+    : TransformationName(""), IsQueryInstances(false), Counter(0), ToCounter(0),
+      SourceFileName(""), OutputFileName("") {}
+};
+
 class TransformationManager {
 
 public:
@@ -41,9 +55,11 @@ public:
 
   static int ErrorInvalidCounter;
 
-  bool doTransformation(std::string &ErrorMsg, int &ErrorCode);
+  bool doTransformation(const ClangDeltaInvocationOptions &Opts,
+                        std::string &ErrorMsg, int &ErrorCode);
 
-  bool verify(std::string &ErrorMsg, int &ErrorCode);
+  bool verify(const ClangDeltaInvocationOptions &Opts, std::string &ErrorMsg,
+              int &ErrorCode);
 
   bool hasTransformation(const std::string &TransName) {
     return TransformationsMap.find(TransName) != TransformationsMap.end();

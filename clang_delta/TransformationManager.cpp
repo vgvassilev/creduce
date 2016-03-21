@@ -241,9 +241,25 @@ void TransformationManager::closeOutStream(llvm::raw_ostream *OutStream)
     delete OutStream;
 }
 
-bool TransformationManager::doTransformation(std::string &ErrorMsg, int &ErrorCode)
+bool TransformationManager::doTransformation(const ClangDeltaInvocationOptions &Opts,
+                                             std::string &ErrorMsg, int &ErrorCode)
 {
   ErrorMsg = "";
+
+  setTransformation(Opts.TransformationName);
+  if (Opts.IsQueryInstances)
+    setQueryInstanceFlag(true);
+  setTransformationCounter(Opts.Counter);
+  if (Opts.ToCounter)
+    setToCounter(Opts.ToCounter);
+  setOutputFileName(Opts.OutputFileName);
+  setSrcFileName(Opts.SourceFileName);
+
+  if (!initializeCompilerInstance(ErrorMsg))
+    return false;
+
+  if (!verify(Opts, ErrorMsg, ErrorCode))
+    return false;
 
   ClangInstance->createSema(TU_Complete, 0);
   DiagnosticsEngine &Diag = ClangInstance->getDiagnostics();
@@ -292,8 +308,14 @@ bool TransformationManager::doTransformation(std::string &ErrorMsg, int &ErrorCo
   return RV;
 }
 
-bool TransformationManager::verify(std::string &ErrorMsg, int &ErrorCode)
+bool TransformationManager::verify(const ClangDeltaInvocationOptions &Opts,
+                                   std::string &ErrorMsg, int &ErrorCode)
 {
+  if (!hasTransformation(Opts.TransformationName)) {
+    ErrorMsg = "Invalid transformation[" + Opts.TransformationName + "]";
+    return false;
+  }
+
   if (!CurrentTransformationImpl) {
     ErrorMsg = "Empty transformation instance!";
     return false;

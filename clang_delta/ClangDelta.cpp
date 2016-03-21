@@ -95,7 +95,8 @@ static void Die(const std::string &Message)
   exit(ErrorCode);
 }
 
-static void HandleOneArgValue(const std::string &ArgValueStr, size_t SepPos)
+static void HandleOneArgValue(const std::string &ArgValueStr, size_t SepPos,
+                              ClangDeltaInvocationOptions &Opts)
 {
   if ((SepPos < 1) || (SepPos >= ArgValueStr.length())) {
       DieOnBadCmdArg("--" + ArgValueStr);
@@ -107,16 +108,12 @@ static void HandleOneArgValue(const std::string &ArgValueStr, size_t SepPos)
   ArgValue = ArgValueStr.substr(SepPos+1);
 
   if (!ArgName.compare("transformation")) {
-    if (TransMgr->setTransformation(ArgValue)) {
-      Die("Invalid transformation[" + ArgValue + "]");
-    }
+    Opts.TransformationName = ArgValue;
   }
   else if (!ArgName.compare("query-instances")) {
-    if (TransMgr->setTransformation(ArgValue)) {
-      Die("Invalid transformation[" + ArgValue + "]");
-    }
-    TransMgr->setQueryInstanceFlag(true);
-    TransMgr->setTransformationCounter(1);
+    Opts.TransformationName = ArgValue;
+    Opts.IsQueryInstances = true;
+    Opts.Counter = 1;
   }
   else if (!ArgName.compare("counter")) {
     int Val;
@@ -126,8 +123,7 @@ static void HandleOneArgValue(const std::string &ArgValueStr, size_t SepPos)
       ErrorCode = TransformationManager::ErrorInvalidCounter;
       Die("Invalid counter[" + ArgValueStr + "]");
     }
-
-    TransMgr->setTransformationCounter(Val);
+    Opts.Counter = Val;
   }
   else if (!ArgName.compare("to-counter")) {
     int Val;
@@ -138,10 +134,10 @@ static void HandleOneArgValue(const std::string &ArgValueStr, size_t SepPos)
       Die("Invalid to-counter[" + ArgValueStr + "]");
     }
 
-    TransMgr->setToCounter(Val);
+    Opts.ToCounter = Val;
   }
   else if (!ArgName.compare("output")) {
-    TransMgr->setOutputFileName(ArgValue);
+    Opts.OutputFileName = ArgValue;
   }
   else {
     DieOnBadCmdArg("--" + ArgValueStr);
@@ -171,7 +167,8 @@ static void HandleOneNoneValueArg(const std::string &ArgStr)
   }
 }
 
-static void HandleOneArg(const char *Arg)
+static void HandleOneArg(const char *Arg,
+                         ClangDeltaInvocationOptions &Opts)
 {
   std::string ArgStr(Arg);
 
@@ -183,32 +180,28 @@ static void HandleOneArg(const char *Arg)
     size_t found;
     found = SubArgStr.find('=');
     if (found != std::string::npos) {
-      HandleOneArgValue(SubArgStr, found);
+      HandleOneArgValue(SubArgStr, found, Opts);
     }
     else {
       HandleOneNoneValueArg(SubArgStr);
     }
   }
   else {
-    TransMgr->setSrcFileName(ArgStr);
+    Opts.SourceFileName = ArgStr;
   }
 }
 
 int main(int argc, char **argv)
 {
   TransMgr = TransformationManager::GetInstance();
+
+  ClangDeltaInvocationOptions Opts;
   for (int i = 1; i < argc; i++) {
-    HandleOneArg(argv[i]);
+    HandleOneArg(argv[i], Opts);
   }
 
   std::string ErrorMsg;
-  if (!TransMgr->verify(ErrorMsg, ErrorCode))
-    Die(ErrorMsg);
-
-  if (!TransMgr->initializeCompilerInstance(ErrorMsg))
-    Die(ErrorMsg);
-
-  if (!TransMgr->doTransformation(ErrorMsg, ErrorCode)) {
+  if (!TransMgr->doTransformation(Opts, ErrorMsg, ErrorCode)) {
     // fail to do transformation
     Die(ErrorMsg);
   }
