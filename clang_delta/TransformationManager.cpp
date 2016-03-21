@@ -236,6 +236,19 @@ void TransformationManager::closeOutStream(llvm::raw_ostream *OutStream)
 bool TransformationManager::doTransformation(const ClangDeltaInvocationOptions &Opts,
                                              std::string &ErrorMsg, int &ErrorCode)
 {
+  if (Opts.TransformationName == "*") {
+    assert(Opts.IsQueryInstances && "Only available for --query-intances mode");
+    for (auto &Trans : TransformationsMap) {
+      // Intentional copy.
+      ClangDeltaInvocationOptions CDInvOpts = Opts;
+      CDInvOpts.TransformationName = Trans.first;
+      llvm::outs() << "[ " << Trans.first << " ] -> ";
+      if (!doTransformation(CDInvOpts, ErrorMsg, ErrorCode))
+        return false;
+    }
+    return true;
+  }
+
   ErrorMsg = "";
 
   setTransformation(Opts.TransformationName);

@@ -80,6 +80,9 @@ public:
   }
 
   void setSrcFileName(const std::string &FileName) {
+    // This can happen if we do --query-instances=*
+    if (SrcFileName == FileName)
+      return;
     assert(SrcFileName.empty() && "Could only process one file each time");
     SrcFileName = FileName;
   }
