@@ -268,16 +268,8 @@ bool TransformationManager::doTransformation(const ClangDeltaInvocationOptions &
 
   CurrentTransformationImpl->setQueryInstanceFlag(QueryInstanceOnly);
   CurrentTransformationImpl->setTransformationCounter(TransformationCounter);
-  if (ToCounter > 0) {
-    if (CurrentTransformationImpl->isMultipleRewritesEnabled()) {
-      CurrentTransformationImpl->setToCounter(ToCounter);
-    }
-    else {
-      ErrorMsg = "current transformation[";
-      ErrorMsg += CurrentTransName; 
-      ErrorMsg += "] does not support multiple rewrites!";
-      return false;
-    }
+  if (ToCounter > 0 && CurrentTransformationImpl->isMultipleRewritesEnabled()) {
+    CurrentTransformationImpl->setToCounter(ToCounter);
   }
 
   ParseAST(ClangInstance->getSema());
@@ -333,6 +325,13 @@ bool TransformationManager::verify(const ClangDeltaInvocationOptions &Opts,
   if ((ToCounter > 0) && (ToCounter < TransformationCounter)) {
     ErrorMsg = "to-counter value cannot be smaller than counter value!";
     ErrorCode = ErrorInvalidCounter;
+    return false;
+  }
+
+  if (ToCounter > 0 && !CurrentTransformationImpl->isMultipleRewritesEnabled()) {
+    ErrorMsg = "current transformation[";
+    ErrorMsg += CurrentTransName;
+    ErrorMsg += "] does not support multiple rewrites!";
     return false;
   }
 
