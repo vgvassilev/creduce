@@ -40,18 +40,15 @@ class TransformationManager {
 
 public:
 
-  static TransformationManager *GetInstance();
+  TransformationManager();
 
-  static void Finalize();
+  ~TransformationManager();
 
-  static void registerTransformation(const char *TransName, 
-                                     Transformation *TransImpl);
-  
-  static bool isCXXLangOpt();
+  ///\brief Our static instance of the TransformationManager object.
+  ///
+  static TransformationManager *getTransformationManager();
 
-  static bool isCLangOpt();
-
-  static bool isOpenCLLangOpt();
+  void registerTransformation(const char *TransName, Transformation *TransImpl);
 
   static int ErrorInvalidCounter;
 
@@ -104,18 +101,9 @@ public:
   void printTransformationNames();
 
 private:
-  
-  TransformationManager();
-
-  ~TransformationManager();
-
   llvm::raw_ostream *getOutStream();
 
   void closeOutStream(llvm::raw_ostream *OutStream);
-
-  static TransformationManager *Instance;
-
-  static std::map<std::string, Transformation *> *TransformationsMapPtr;
 
   std::map<std::string, Transformation *> TransformationsMap;
 
@@ -142,23 +130,20 @@ private:
 
 };
 
+// Analogous to llvm's register pass (PassSupport.h)
 template<typename TransformationClass>
-class RegisterTransformation {
-
-public:
+struct RegisterTransformation {
+  ///\brief A utility function, which is used to register all transformations.
+  ///
+  /// More information about the technique is available here:
+  /// http://llvm.org/docs/WritingAnLLVMPass.html
+  ///
   RegisterTransformation(const char *TransName, const char *Desc) {
     Transformation *TransImpl = new TransformationClass(TransName, Desc);
     assert(TransImpl && "Fail to create TransformationClass");
- 
-    TransformationManager::registerTransformation(TransName, TransImpl);
+    TransformationManager::getTransformationManager()
+      ->registerTransformation(TransName, TransImpl);
   }
-
-private:
-  // Unimplemented
-  RegisterTransformation(const RegisterTransformation &);
-
-  void operator=(const RegisterTransformation &);
-
 };
 
 #endif

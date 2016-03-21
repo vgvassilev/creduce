@@ -50,14 +50,12 @@ public:
 
   bool VisitCallExpr(CallExpr *CE);
 
+  RemoveAddrTaken *ConsumerInstance;
 private:
 
   void handleOneAddrTakenOp(const UnaryOperator *UO);
 
   void handleOneOperand(const Expr *E);
-
-  RemoveAddrTaken *ConsumerInstance;
-
 };
 
 void RemoveAddrTakenCollectionVisitor::handleOneAddrTakenOp(
@@ -150,7 +148,7 @@ void RemoveAddrTaken::Initialize(ASTContext &context)
 bool RemoveAddrTaken::HandleTopLevelDecl(DeclGroupRef D) 
 {
   TransAssert(CollectionVisitor && "NULL CollectionVisitor!");
-  if (TransformationManager::isCXXLangOpt()) {
+  if (CollectionVisitor->ConsumerInstance->Context->getLangOpts().CPlusPlus) {
     ValidInstanceNum = 0;
     return true;
   }

@@ -14,6 +14,8 @@
 
 #include "TransformationManager.h"
 
+#include "Transformation.h"
+
 #include <sstream>
 
 #include "clang/Basic/Diagnostic.h"
@@ -23,56 +25,11 @@
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Parse/ParseAST.h"
 
-#include "Transformation.h"
+#include "llvm/Support/ManagedStatic.h"
 
 using namespace clang;
 
 int TransformationManager::ErrorInvalidCounter = 1;
-
-TransformationManager* TransformationManager::Instance;
-
-std::map<std::string, Transformation *> *
-TransformationManager::TransformationsMapPtr;
-
-TransformationManager *TransformationManager::GetInstance()
-{
-  if (TransformationManager::Instance)
-    return TransformationManager::Instance;
-
-  TransformationManager::Instance = new TransformationManager();
-  assert(TransformationManager::Instance);
-
-  TransformationManager::Instance->TransformationsMap = 
-    *TransformationManager::TransformationsMapPtr;
-  return TransformationManager::Instance;
-}
-
-bool TransformationManager::isCXXLangOpt()
-{
-  TransAssert(TransformationManager::Instance && "Invalid Instance!");
-  TransAssert(TransformationManager::Instance->ClangInstance && 
-              "Invalid ClangInstance!");
-  return (TransformationManager::Instance->ClangInstance->getLangOpts()
-          .CPlusPlus);
-}
-
-bool TransformationManager::isCLangOpt()
-{
-  TransAssert(TransformationManager::Instance && "Invalid Instance!");
-  TransAssert(TransformationManager::Instance->ClangInstance && 
-              "Invalid ClangInstance!");
-  return (TransformationManager::Instance->ClangInstance->getLangOpts()
-          .C99);
-}
-
-bool TransformationManager::isOpenCLLangOpt()
-{
-  TransAssert(TransformationManager::Instance && "Invalid Instance!");
-  TransAssert(TransformationManager::Instance->ClangInstance &&
-              "Invalid ClangInstance!");
-  return (TransformationManager::Instance->ClangInstance->getLangOpts()
-          .OpenCL);
-}
 
 bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
 {
@@ -194,25 +151,6 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
   }
 
   return true;
-}
-
-void TransformationManager::Finalize()
-{
-  assert(TransformationManager::Instance);
-  
-  std::map<std::string, Transformation *>::iterator I, E;
-  for (I = Instance->TransformationsMap.begin(), 
-       E = Instance->TransformationsMap.end();
-       I != E; ++I) {
-    // CurrentTransformationImpl will be freed by ClangInstance
-    if ((*I).second != Instance->CurrentTransformationImpl)
-      delete (*I).second;
-  }
-  if (Instance->TransformationsMapPtr)
-    delete Instance->TransformationsMapPtr;
-
-  delete Instance;
-  Instance = NULL;
 }
 
 llvm::raw_ostream *TransformationManager::getOutStream()
@@ -344,19 +282,18 @@ bool TransformationManager::verify(const ClangDeltaInvocationOptions &Opts,
   return true;
 }
 
+static llvm::ManagedStatic<TransformationManager> TransformationManagerObj;
+TransformationManager *TransformationManager::getTransformationManager() {
+  return &*TransformationManagerObj;
+}
+
+
 void TransformationManager::registerTransformation(const char *TransName,
                                                    Transformation *TransImpl)
 {
-  if (!TransformationManager::TransformationsMapPtr) {
-    TransformationManager::TransformationsMapPtr = 
-      new std::map<std::string, Transformation *>();
-  }
-
   assert((TransImpl != NULL) && "NULL Transformation!");
-  assert((TransformationManager::TransformationsMapPtr->find(TransName) == 
-          TransformationManager::TransformationsMapPtr->end()) &&
-         "Duplicated transformation!");
-  (*TransformationManager::TransformationsMapPtr)[TransName] = TransImpl;
+  assert(!hasTransformation(TransName) && "Duplicated transformation!");
+  TransformationsMap[TransName] = TransImpl;
 }
 
 void TransformationManager::printTransformations()
@@ -404,5 +341,5 @@ TransformationManager::TransformationManager()
 
 TransformationManager::~TransformationManager()
 {
-  // Nothing to do
+  // When clang shuts down it leaks the memory. Do the same.
 }

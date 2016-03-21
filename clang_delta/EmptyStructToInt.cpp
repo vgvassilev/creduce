@@ -372,7 +372,7 @@ bool EmptyStructToInt::pointToSelf(const FieldDecl *FD)
   if (!Ty->isPointerType())
     return false;
   const Type *PointeeTy = getBasePointerElemType(Ty);
-  if (TransformationManager::isCXXLangOpt()) {
+  if (FD->getASTContext().getLangOpts().CPlusPlus) {
     const CXXRecordDecl *Base = getBaseDeclFromType(Ty);
     if (!Base)
       return false;

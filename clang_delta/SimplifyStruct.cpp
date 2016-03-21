@@ -207,7 +207,7 @@ bool SimplifyStructRewriteVisitor::VisitMemberExpr(MemberExpr *ME)
 
   if (!FD) {
     // in C++, getMemberDecl returns a CXXMethodDecl.
-    if (TransformationManager::isCXXLangOpt())
+    if (ConsumerInstance->Context->getLangOpts().CPlusPlus)
       return true;
     TransAssert(0 && "Bad FD!\n");
   }

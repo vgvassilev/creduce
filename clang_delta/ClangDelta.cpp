@@ -19,7 +19,7 @@
 #include "llvm/Support/raw_ostream.h"
 #include "TransformationManager.h"
 
-static TransformationManager *TransMgr;
+TransformationManager *TransMgr = 0;
 static int ErrorCode = -1;
 
 static void PrintVersion()
@@ -84,14 +84,12 @@ static void DieOnBadCmdArg(const std::string &ArgStr)
   llvm::outs() << "Error: Bad command line option `" << ArgStr << "`\n";
   llvm::outs() << "\n";
   PrintHelpMessage();
-  TransformationManager::Finalize();
   exit(-1);
 }
 
 static void Die(const std::string &Message)
 {
   llvm::outs() << "Error: " << Message << "\n";
-  TransformationManager::Finalize();
   exit(ErrorCode);
 }
 
@@ -193,7 +191,7 @@ static void HandleOneArg(const char *Arg,
 
 int main(int argc, char **argv)
 {
-  TransMgr = TransformationManager::GetInstance();
+  TransMgr = TransformationManager::getTransformationManager();
 
   ClangDeltaInvocationOptions Opts;
   for (int i = 1; i < argc; i++) {
@@ -206,7 +204,6 @@ int main(int argc, char **argv)
     Die(ErrorMsg);
   }
 
-  TransformationManager::Finalize();
   return 0;
 }
 
