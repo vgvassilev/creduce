@@ -53,13 +53,11 @@ public:
     return 0;
   }
 
-  void setTransformationCounter(int Counter) {
-    assert((Counter > 0) && "Bad Counter value!");
+  void setTransformationCounter(unsigned Counter) {
     TransformationCounter = Counter;
   }
 
-  void setToCounter(int Counter) {
-    assert((Counter > 0) && "Bad to-counter value!");
+  void setToCounter(unsigned Counter) {
     ToCounter = Counter;
   }
 
