@@ -1,6 +1,6 @@
 //===----------------------------------------------------------------------===//
 //
-// Copyright (c) 2012, 2013, 2014, 2015 The University of Utah
+// Copyright (c) 2012, 2013, 2014, 2015, 2016 The University of Utah
 // All rights reserved.
 //
 // This file is distributed under the University of Illinois Open Source
@@ -185,6 +185,7 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
   Preprocessor &PP = ClangInstance->getPreprocessor();
 #if CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR == 7
     PP.getBuiltinInfo().InitializeBuiltins(PP.getIdentifierTable(),
+  PP.getBuiltinInfo().initializeBuiltins(PP.getIdentifierTable(),
                                          PP.getLangOpts());
 #else
   PP.getBuiltinInfo().initializeBuiltins(PP.getIdentifierTable(),

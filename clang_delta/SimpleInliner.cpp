@@ -1,6 +1,6 @@
 //===----------------------------------------------------------------------===//
 //
-// Copyright (c) 2012, 2013, 2014, 2015 The University of Utah
+// Copyright (c) 2012, 2013, 2014, 2015, 2016 The University of Utah
 // All rights reserved.
 //
 // This file is distributed under the University of Illinois Open Source
@@ -319,7 +319,8 @@ bool SimpleInliner::hasValidArgExprs(const CallExpr *CE)
 {
   for(CallExpr::const_arg_iterator I = CE->arg_begin(), E = CE->arg_end();
       I != E; ++I) {
-    if (!isValidArgExpr(*I))
+    const Expr *Exp = *I;
+    if (!isValidArgExpr(Exp))
       return false;
   }
   return true;

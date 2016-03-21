@@ -15852,7 +15852,7 @@ fi
     as_fn_error $? "LLVM is required but program \`llvm-config' cannot be found in $with_llvm_path" "$LINENO" 5
   fi
 
-  if test -n "3.7"; then
+  if test -n "3.8"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LLVM version" >&5
 $as_echo_n "checking for LLVM version... " >&6; }
     LLVM_VERSION=`$LLVM_CONFIG --version`
@@ -15877,7 +15877,7 @@ $as_echo "$LLVM_VERSION" >&6; }
                      -e 's/[^0-9]//g'`
 
 
-  ax_compare_version_B=`echo "3.7" | sed -e 's/\([0-9]*\)/Z\1Z/g' \
+  ax_compare_version_B=`echo "3.8" | sed -e 's/\([0-9]*\)/Z\1Z/g' \
                      -e 's/Z\([0-9]\)Z/Z0\1Z/g' \
                      -e 's/Z\([0-9][0-9]\)Z/Z0\1Z/g' \
                      -e 's/Z\([0-9][0-9][0-9]\)Z/Z0\1Z/g' \
@@ -15892,7 +15892,7 @@ x$ax_compare_version_B" | sed 's/^ *//' | sort -r | sed "s/x${ax_compare_version
     if test "$ax_compare_version" = "true" ; then
     :
     else
-        as_fn_error $? "LLVM version 3.7 or later is required" "$LINENO" 5
+        as_fn_error $? "LLVM version 3.8 or later is required" "$LINENO" 5
 
   fi
 
@@ -15905,18 +15905,20 @@ x$ax_compare_version_B" | sed 's/^ *//' | sort -r | sed "s/x${ax_compare_version
   fi
 
   # When setting `LLVM_CPPFLAGS', we weed out command-line options that might
-  # be troublesome (e.g., -W options that are supported by `CXX', or -W options
-  # that turn warnings into errors).  We also weed out options that might
-  # override choices that *we* want to control (e.g., debug and optimization
-  # options).
+  # be troublesome (e.g., -W/-f options that are not supported by `CXX', or -W
+  # options that turn warnings into errors).  We also weed out options that
+  # might override choices that *we* want to control (e.g., debug and
+  # optimization options).
   #
   # The subparts of the `grep' invocation below remove compiler command-line
   # options of the following forms:
-  #   -W...         --- warning options
-  #   -w            --- inhibits all warnings
-  #   -pedantic...  --- pedantic warning options
-  #   -g...         --- debugging options
-  #   -O...         --- optimization options
+  #   -W...                --- warning options
+  #   -w                   --- inhibits all warnings
+  #   -pedantic...         --- pedantic warning options
+  #   -f...diagnostics...  --- diagnostics reporting options (GCC, Clang)
+  #   -f...show...         --- diagnostics reporting options (Clang)
+  #   -g...                --- debugging options
+  #   -O...                --- optimization options
   #
   # The `tr/sed | grep | xargs' pipeline is intended to be portable.  We use
   # `grep' for matching because writing fancy, portable `sed' expressions is
@@ -15926,7 +15928,7 @@ x$ax_compare_version_B" | sed 's/^ *//' | sort -r | sed "s/x${ax_compare_version
   # up; use `grep' instead.  Bonus: better readability!
 
   LLVM_BINDIR=`$LLVM_CONFIG --bindir`
-  LLVM_CPPFLAGS=`$LLVM_CONFIG --cxxflags |     tr '\t' ' ' | sed -e 's/  */ /g' | tr ' ' '\n' |     grep -v -e '^-W'             -e '^-w$'             -e '^-pedantic'             -e '^-g'             -e '^-O$'             -e '^-O[0-9s]' |     xargs`
+  LLVM_CPPFLAGS=`$LLVM_CONFIG --cxxflags |     tr '\t' ' ' | sed -e 's/  */ /g' | tr ' ' '\n' |     grep -v -e '^-W'             -e '^-w$'             -e '^-pedantic'             -e '^-f[-a-z]diagnostics'             -e '^-f[-a-z]show'             -e '^-g'             -e '^-O$'             -e '^-O[0-9s]' |     xargs`
   LLVM_LDFLAGS="`$LLVM_CONFIG --ldflags` $LLVM_SYSLIBS"
   LLVM_LIBS=`$LLVM_CONFIG --libs engine`
 
@@ -16026,12 +16028,13 @@ fi
 # `-fno-strict-aliasing' quiets many warnings about LLVM headers and possibly
 #   improves our chances at working code.
 # `-Wno-unused-parameter' quiets many warnings about LLVM headers.
+# `-Wno-missing-field-initializers' quiets many warnings about LLVM headers.
 #
 if test "$ac_test_CXXFLAGS" = set; then
   # The user specified `CXXFLAGS', so do nothing.
   CXXFLAGS="$CXXFLAGS"
 elif test "$GXX" = yes; then
-  CXXFLAGS="-g -O3 -fno-strict-aliasing -Wall -Wextra -Wno-long-long -Wno-unused-parameter"
+  CXXFLAGS="-g -O3 -fno-strict-aliasing -Wall -Wextra -Wno-long-long -Wno-unused-parameter -Wno-missing-field-initializers"
 fi
 
 ###############################################################################

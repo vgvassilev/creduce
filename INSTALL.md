@@ -42,6 +42,8 @@ Install these packages either manually or using a package manager:
 
 * LLVM/Clang 3.7.0: http://llvm.org/releases/download.html#3.7.0
 
+* LLVM/Clang 3.8.0: http://llvm.org/releases/download.html#3.8.0
+
   (No need to compile it: the appropriate "Clang binaries" package is
   all you need.  If you use one of the binary packages, you may need to
   install additional packages that the binary package depends on. For
@@ -150,7 +152,11 @@ need to be compiled against specific released versions of LLVM, as
 noted in this file.
 
 Our GitHub repo usually also has a branch called llvm-svn-compatible
-that supports building C-Reduce against the current LLVM SVN head.
+that supports building C-Reduce against LLVMs that are newer than the
+last released version. The most recent version of LLVM that the
+llvm-svn-compatible branch is known to compile against is recorded in
+LAST_KNOWN_WORKING_LLVM. C-Reduce may happen to also build against
+revisions before or after this, but we make no guarantees.
 
 
 ##Developers' Corner:
