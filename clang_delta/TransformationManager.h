@@ -68,7 +68,7 @@ public:
   void setTransformation(const std::string &Trans) {
     assert(hasTransformation(Trans) && "No transformation found.");
     CurrentTransName = Trans;
-    CurrentTransformationImpl = TransformationsMap[Trans.c_str()];
+    CurrentTransformationImpl = TransformationsMap[Trans];
   }
 
   void setTransformationCounter(unsigned Counter) {
