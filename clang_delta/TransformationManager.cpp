@@ -87,17 +87,20 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
   ClangInstance->createDiagnostics();
   CompilerInvocation &Invocation = ClangInstance->getInvocation();
 
-  InputKind IK;
+  // guess which is the language
+  InputKind IK
+     = FrontendOptions::getInputKindForExtension(StringRef(SrcFileName).rsplit('.').second);
+  // If the CREDUCE_LANG env var is defined override the guess.
+  // This is useful when reducing multiple files. For instance, we reduce a cpp
+  // file with its header files. The guessing mechanism will consider all .h
+  // files (and files with no extension) as C files and fail to build an AST.
   if (const char *Lang = getenv("CREDUCE_LANG")) {
     if (!strcmp(Lang, "CXX"))
       IK = IK_CXX;
     else if (!strcmp(Lang, "C"))
       IK = IK_C;
   }
-  else { // guess which is the language
-    IK = FrontendOptions::getInputKindForExtension(
-        StringRef(SrcFileName).rsplit('.').second);
-  }
+
   std::vector<const char*> Args;
   if ((IK == IK_C) || (IK == IK_PreprocessedC)) {
     Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_C);
