@@ -73,8 +73,8 @@ void ReplaceDerivedClass::Initialize(ASTContext &context)
 
 void ReplaceDerivedClass::HandleTranslationUnit(ASTContext &Ctx)
 {
-  if (TransformationManager::isCLangOpt() ||
-      TransformationManager::isOpenCLLangOpt()) {
+  const LangOptions &LO = Ctx.getLangOpts();
+  if (LO.C99 || LO.OpenCL) {
     ValidInstanceNum = 0;
   }
   else {

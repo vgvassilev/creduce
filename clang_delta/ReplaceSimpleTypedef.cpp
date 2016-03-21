@@ -184,7 +184,7 @@ bool ReplaceSimpleTypedef::isValidType(const Type *Ty, const TypedefDecl *D)
     if (RD->getNameAsString() == D->getNameAsString())
       return false;
 
-    if (TransformationManager::isCLangOpt())
+    if (D->getASTContext().getLangOpts().C99)
       return true;
     const CXXRecordDecl *CXXRD = dyn_cast<CXXRecordDecl>(RD);
     TransAssert(CXXRD && "NULL CXXRecordDecl!");

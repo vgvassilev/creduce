@@ -220,7 +220,8 @@ void RemoveNestedFunction::addNewTmpVariable(ASTContext &ASTCtx)
   std::string VarStr;
 
   getNewTmpVariableStr(ASTCtx, VarStr);
-  if (TransformationManager::isCXXLangOpt()) {
+  const LangOptions &LO = ASTCtx.getLangOpts();
+  if (LO.CPlusPlus) {
     // TheStmt and TheCallExpr may share the same start location, e.g..
     // TheCallExpr is a CXXOperatorCallExpr. In this case, we just replace
     // TheCallExpr with tmp variable's definition and the tmp variable.

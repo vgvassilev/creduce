@@ -103,7 +103,8 @@ void ParamToGlobal::Initialize(ASTContext &context)
 
 void ParamToGlobal::HandleTranslationUnit(ASTContext &Ctx)
 {
-  if (TransformationManager::isOpenCLLangOpt()) {
+  const LangOptions &LO = Ctx.getLangOpts();
+  if (LO.OpenCL) {
     ValidInstanceNum = 0;
   }
   else {

@@ -139,7 +139,8 @@ void LocalToGlobal::Initialize(ASTContext &context)
 
 void LocalToGlobal::HandleTranslationUnit(ASTContext &Ctx)
 {
-  if (TransformationManager::isOpenCLLangOpt()) {
+  const LangOptions &LO = Ctx.getLangOpts();
+  if (LO.OpenCL) {
     ValidInstanceNum = 0;
   }
   else {

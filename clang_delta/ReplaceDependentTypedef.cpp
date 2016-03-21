@@ -77,8 +77,8 @@ void ReplaceDependentTypedef::Initialize(ASTContext &context)
 
 void ReplaceDependentTypedef::HandleTranslationUnit(ASTContext &Ctx)
 {
-  if (TransformationManager::isCLangOpt() ||
-      TransformationManager::isOpenCLLangOpt()) {
+  const LangOptions &LO = Ctx.getLangOpts();
+  if (LO.C99 || LO.OpenCL) {
     ValidInstanceNum = 0;
   }
   else {

@@ -662,7 +662,8 @@ bool RemoveNamespace::HandleTopLevelDecl(DeclGroupRef D)
 
 void RemoveNamespace::HandleTranslationUnit(ASTContext &Ctx)
 {
-  if (TransformationManager::isCLangOpt()) {
+  const LangOptions &LO = Ctx.getLangOpts();
+  if (LO.C99) {
     ValidInstanceNum = 0;
   }
   else {

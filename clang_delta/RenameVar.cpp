@@ -148,7 +148,8 @@ void RenameVar::HandleTranslationUnit(ASTContext &Ctx)
   else if (NumVars > NumNames) {
     // TEMP: currently not to rename vars in C++ files if there are
     //       more than 26 global or local vars
-    if (TransformationManager::isCXXLangOpt() || allValidNames()) {
+    const LangOptions &LO = Ctx.getLangOpts();
+    if (LO.CPlusPlus || allValidNames()) {
       ValidInstanceNum = 0;
     }
     else {
