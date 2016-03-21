@@ -45,12 +45,14 @@ public:
 
   bool verify(std::string &ErrorMsg, int &ErrorCode);
 
-  int setTransformation(const std::string &Trans) {
-    if (TransformationsMap.find(Trans.c_str()) == TransformationsMap.end())
-      return -1;
+  bool hasTransformation(const std::string &TransName) {
+    return TransformationsMap.find(TransName) != TransformationsMap.end();
+  }
+
+  void setTransformation(const std::string &Trans) {
+    assert(hasTransformation(Trans) && "No transformation found.");
     CurrentTransName = Trans;
     CurrentTransformationImpl = TransformationsMap[Trans.c_str()];
-    return 0;
   }
 
   void setTransformationCounter(unsigned Counter) {
