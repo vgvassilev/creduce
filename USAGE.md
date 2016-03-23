@@ -30,7 +30,7 @@ or using the script `localize_headers`.
 
 3. Copy the system headers locally.
 ```
-cat included_files.txt | xargs -I$  python -c "import os,sys; print os.path.abspath(sys.argv[1])" $ |xargs -I$ rsync -R $ includes/
+cat included_files.txt | xargs -I$  python -c "import os,sys; print os.path.abspath(sys.argv[1])" $ | xargs -I$ rsync -R -L $ includes/
 ```
 
 `rsync` requires normalized paths. The easiest is to use python to do it.
