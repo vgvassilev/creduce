@@ -1462,8 +1462,10 @@ bool RewriteUtils::removeFieldDecl(const FieldDecl *FD)
 
 bool RewriteUtils::removeDecl(const Decl *D)
 {
-  SourceRange Range = D->getSourceRange();
-  TransAssert((TheRewriter->getRangeSize(Range) != -1)
+  SourceRange Range
+     = TheRewriter->getSourceMgr().getExpansionRange(D->getSourceRange());
+
+  TransAssert(TheRewriter->getRangeSize(Range) != -1
               && "Bad SourceRange!");
 
   SourceLocation StartLoc = Range.getBegin();
@@ -1480,7 +1482,7 @@ bool RewriteUtils::removeDecl(const Decl *D)
   SourceLocation TokStartLoc = EndLoc.getLocWithOffset(1);
   bool success = !Lexer::getRawToken(TokStartLoc, Tok, SM, C.getLangOpts(),
                                      /*IgnoreWhiteSpace*/true);
-  if (success && Tok.is(tok::semi))
+  if (success && (Tok.is(tok::semi) || Tok.is(tok::comma)))
      EndLoc = Tok.getEndLoc();
 
   return !(TheRewriter->RemoveText(SourceRange(StartLoc, EndLoc)));
