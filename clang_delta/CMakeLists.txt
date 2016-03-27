@@ -115,6 +115,7 @@ set(TRANSFORMATION_HEADERS
   ReplaceUndefinedFunction.h
   ReturnVoid.h
   SimpleInliner.h
+  SimplifyBody.h
   SimplifyCallExpr.h
   SimplifyCommaExpr.h
   SimplifyDependentTypedef.h
@@ -184,6 +185,7 @@ set(TRANSFORMATION_SOURCES
   ReplaceUndefinedFunction.cpp
   ReturnVoid.cpp
   SimpleInliner.cpp
+  SimplifyBody.cpp
   SimplifyCallExpr.cpp
   SimplifyCommaExpr.cpp
   SimplifyDependentTypedef.cpp
