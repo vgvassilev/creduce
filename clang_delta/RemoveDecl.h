@@ -25,13 +25,20 @@ namespace clang {
 class RemoveDecl : public Transformation {
 private:
   std::vector<clang::Decl *> Decls;
+  std::set<clang::Decl *> DeclsLookup;
   virtual void Initialize(clang::ASTContext &context) override;
   virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override;
 
 public:
-  void addDecl(clang::Decl *val) { Decls.push_back(val); ++ValidInstanceNum; }
- RemoveDecl(const char *TransName, const char *Desc)
-   : Transformation(TransName, Desc)
-    { }
+  void addDecl(clang::Decl *val) {
+    if (!DeclsLookup.count(val)) {
+      DeclsLookup.insert(val);
+      Decls.push_back(val);
+      ++ValidInstanceNum;
+    }
+  }
+  RemoveDecl(const char *TransName, const char *Desc)
+    : Transformation(TransName, Desc, /*MultipleRewrites*/true)
+  { }
 };
 #endif // REMOVE_DECL_H

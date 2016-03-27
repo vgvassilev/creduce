@@ -85,7 +85,7 @@ void RemoveDecl::HandleTranslationUnit(ASTContext &Ctx)
   }
   else {
     for (int i = ToCounter; i >= TransformationCounter; --i) {
-      D = Decls[i];
+      D = Decls[i-1];
       RewriteHelper->removeDecl(D);
     }
   }
