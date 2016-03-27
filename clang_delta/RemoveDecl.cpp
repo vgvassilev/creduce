@@ -35,7 +35,7 @@ public:
     if (auto *DC = dyn_cast<DeclContext>(D))
       return VisitDeclContext(DC);
 
-    if (D->isImplicit() || D->isInvalidDecl())
+    if (D->isImplicit() || D->isInvalidDecl() || !D->getSourceRange().isValid())
       return true;
 
     //if (!D->isThisDeclarationReferenced())
