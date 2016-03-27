@@ -578,6 +578,14 @@ sub delta_pass ($) {
 		print "\n****** skipping the rest of this pass ******\n\n";
 		$skip = 1;
 	    }
+	    elsif (defined($key) && $key eq "n") {
+		print "\n****** skipping file $fn ******\n\n";
+                next;
+	    }
+	    elsif (defined($key) && $key eq "d") {
+		print "\n****** toggling diff printing mode ******\n\n";
+                $PRINT_DIFF = !$PRINT_DIFF;
+	    }
 	}
 	while (!($stopped || $skip) && $num_running < $NPROCS) {
 	    my $tmpdir = make_tmpdir();
