@@ -15,6 +15,7 @@
 
 #include "clang/AST/Decl.h"
 
+#include <set>
 #include <vector>
 
 namespace clang {
