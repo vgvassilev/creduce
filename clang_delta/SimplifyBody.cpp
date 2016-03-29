@@ -31,16 +31,28 @@ static const char *DescriptionMsg =
 
 static RegisterTransformation<SimplifyBody> Trans("simplify-body", DescriptionMsg);
 
-static bool isSupportedReturnType(FunctionDecl* FD) {
-  QualType returnTy = FD->getReturnType();
+static bool isSupportedReturnType(QualType returnTy) {
   // TagDeclTypes host struct/union/class/enum. We need to handle structs and
   // unions since enums are integral and classes need special treatment.
-  if (CXXRecordDecl* CXXRD = returnTy->getAsCXXRecordDecl())
+  if (CXXRecordDecl* CXXRD = returnTy->getAsCXXRecordDecl()) {
+    CXXRD = CXXRD->getDefinition();
+    // In some scenarios, mostly when there the AST is broken (due to missing
+    // include paths) we cannot ask the definition for default constructors.
+    // For now just be conservative and skip the transformation.
+    // FIXME: We should be able to tell the user to provide CREDUCE_INCLUDE_PATH
+    if (!CXXRD)
+      return false;
+
     return CXXRD->hasDefaultConstructor()
       || CXXRD->hasUserProvidedDefaultConstructor();
+  }
+
+  // For references we need to do the same trick, since we make an instance of
+  // that type.
+  if (returnTy->isReferenceType())
+    return isSupportedReturnType(returnTy->getPoineeType());
 
   return returnTy->isVoidType() || returnTy->isAnyPointerType()
-    || returnTy->isReferenceType()
     || returnTy->isIntegralOrEnumerationType() || returnTy->isUnionType()
     || returnTy->isStructureType();
 }
@@ -60,7 +72,7 @@ public:
       return true;
     if (!D->doesThisDeclarationHaveABody())
       return true;
-    if (!isSupportedReturnType(D))
+    if (!isSupportedReturnType(D->getReturnType()))
       return true;
     if (cast<CompoundStmt>(D->getBody())->body_empty())
       return true;
@@ -124,7 +136,7 @@ static void simplifyFunctionBody(FunctionDecl* FD, Rewriter& RW) {
     return;
   }
 
-  assert(isSupportedReturnType(FD));
+  assert(isSupportedReturnType(FD->getReturnType()));
 }
 
 void SimplifyBody::HandleTranslationUnit(ASTContext &Ctx)
