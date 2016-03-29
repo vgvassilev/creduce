@@ -50,7 +50,7 @@ static bool isSupportedReturnType(QualType returnTy) {
   // For references we need to do the same trick, since we make an instance of
   // that type.
   if (returnTy->isReferenceType())
-    return isSupportedReturnType(returnTy->getPoineeType());
+    return isSupportedReturnType(returnTy->getPointeeType());
 
   return returnTy->isVoidType() || returnTy->isAnyPointerType()
     || returnTy->isIntegralOrEnumerationType() || returnTy->isUnionType()
