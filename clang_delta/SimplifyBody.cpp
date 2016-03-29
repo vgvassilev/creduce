@@ -56,7 +56,7 @@ public:
   bool VisitFunctionDecl(FunctionDecl *D) {
     if (ConsumerInstance->isInIncludedFile(D))
       return true;
-    if (D->isImplicit() || D->isInvalidDecl() || !D->getSourceRange().isValid())
+    if (D->isImplicit() || !D->getSourceRange().isValid())
       return true;
     if (!D->doesThisDeclarationHaveABody())
       return true;
