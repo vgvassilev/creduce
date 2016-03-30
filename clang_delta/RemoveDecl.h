@@ -21,6 +21,7 @@
 namespace clang {
   class ASTContext;
   class Decl;
+  class SourceManager;
 }
 
 class RemoveDecl : public Transformation {
@@ -29,15 +30,26 @@ private:
   std::set<clang::Decl *> DeclsLookup;
   virtual void Initialize(clang::ASTContext &context) override;
   virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override;
+  bool isAlreadyInSourceRange(clang::Decl* newD) const;
+  void checkAndReplaceIfDeclEnclosesAnyExistingDecl(clang::Decl* val);
+  void removeDecl(clang::Decl *val) {
+    auto it = find (Decls.begin(), Decls.end(), val);
+    assert(it != Decls.end() && "Cannot find what to remove.");
+    Decls.erase(it);
+    DeclsLookup.erase(DeclsLookup.find(val));
+    --ValidInstanceNum;
+  }
 
 public:
-  void addDecl(clang::Decl *val) {
-    if (!DeclsLookup.count(val)) {
+  void maybeAddDecl(clang::Decl *val) {
+    if (!DeclsLookup.count(val) && !isAlreadyInSourceRange(val)) {
       DeclsLookup.insert(val);
       Decls.push_back(val);
       ++ValidInstanceNum;
+      checkAndReplaceIfDeclEnclosesAnyExistingDecl(val);
     }
   }
+
   RemoveDecl(const char *TransName, const char *Desc)
     : Transformation(TransName, Desc, /*MultipleRewrites*/true)
   { }

@@ -38,8 +38,7 @@ public:
     if (D->isImplicit() || !D->getSourceRange().isValid())
       return true;
 
-    //if (!D->isThisDeclarationReferenced())
-    ConsumerInstance->addDecl(D);
+    ConsumerInstance->maybeAddDecl(D);
     return true;
   }
 
@@ -52,6 +51,50 @@ public:
     return true;
   }
 };
+
+///Returns true if oldD contains newD.
+static bool containsDecl(Decl* oldD, Decl* newD, const SourceManager& SM) {
+  // struct S {
+  //   int a; //oldD
+  //   int b; //newD
+  // };
+  SourceRange newR = newD->getSourceRange();
+  SourceRange oldR = oldD->getSourceRange();
+  if (SM.isBeforeInSLocAddrSpace(oldR.getBegin(), newR.getBegin()) &&
+      SM.isBeforeInSLocAddrSpace(newR.getEnd(), oldR.getEnd()))
+    // already in the range
+    return true;
+#ifndef NDEBUG
+  // In cases where the one sloc is in the old decl and the other is not.
+  if (SM.isBeforeInSLocAddrSpace(oldR.getBegin(), newR.getBegin()))
+    assert(SM.isBeforeInSLocAddrSpace(oldR.getEnd(), newR.getEnd())
+           && "Partial source range.");
+  if (SM.isBeforeInSLocAddrSpace(newR.getEnd(), oldR.getEnd()))
+    assert(SM.isBeforeInSLocAddrSpace(newR.getBegin(), oldR.getBegin())
+           && "Partial source range.");
+#endif //NDEBUG
+  return false;
+}
+
+bool RemoveDecl::isAlreadyInSourceRange(Decl* newD) const {
+  // Handle cases like:
+  // void f(int param);
+  // We will have one time f and param. In that case f might get removed before
+  // param causing an assert.
+  for (auto* D : Decls)
+    if (containsDecl(D, newD, *SrcManager))
+      return true;
+  return false;
+}
+
+void RemoveDecl::checkAndReplaceIfDeclEnclosesAnyExistingDecl(Decl* newD) {
+  for (auto* D : Decls) {
+    if (containsDecl(newD, D, *SrcManager)) {
+      removeDecl(D);
+      maybeAddDecl(newD);
+    }
+  }
+}
 
 void RemoveDecl::Initialize(ASTContext &context)
 {
