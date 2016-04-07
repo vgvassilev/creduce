@@ -10,7 +10,7 @@ dependencies of `std::basic_string<char>`.
 
 1. T.cpp
 
-```
+```bash
 #include <string>
 std::basic_string<char> myStr;
 int main() { return 0; }
@@ -19,18 +19,18 @@ int main() { return 0; }
 2. Find all include files in the translation unit.
 
 This can be done either by
-```
+```bash
 gcc -fsyntax-only  T.cpp -H
 ```
 or
-```
+```bash
 clang -Xclang -header-include-file -Xclang included_files.txt -fsyntax-only T.cpp && sed -i.bak '/<command line>/d' included_files.txt
 ```
 
 or using the script `localize_headers`.
 
 3. Copy the system headers locally.
-```
+```bash
 cat included_files.txt | xargs -I$  python -c "import os,sys; print os.path.abspath(sys.argv[1])" $ | xargs -I$ rsync -R -L $ includes/
 ```
 
@@ -38,7 +38,7 @@ cat included_files.txt | xargs -I$  python -c "import os,sys; print os.path.absp
 
 4. Define our interestingness test (test.sh).
 
-```
+```bash
 #!/bin/bash
 export CREDUCE_LANG=CXX
 gcc -fsyntax-only --sysroot=./includes/ T.cpp &&  \
@@ -56,7 +56,7 @@ includes to the local ones, which we will reduce.
 
 5. Do it.
 
-```
+```bash
 creduce --tidy test.sh T.cpp includes/
 ```
 
@@ -82,7 +82,7 @@ everything relative to the modulemap file.
 redundant. One can reduce them by using the script located in
 [scripts](scripts/reduce_include_folders.sh).
 
-```
+```bash
 # The crash needs `-fmodule-map-file=/usr/include/module.modulemap`. This means
 # that we need to copy everything in /usr/include/ locally to our dedicated
 # `includes` folder.
