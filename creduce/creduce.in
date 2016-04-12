@@ -276,6 +276,8 @@ sub delta_test () {
     };
     if ($@) {
         print "Killed due to a timeout. Interestingness test ran $TIMEOUT_IN_SECONDS" if $DEBUG;
+        # Maybe we need to remove the temp dirs
+        remove_tmpdirs();
         $res = 1;
     }
     return ($res == 0);
