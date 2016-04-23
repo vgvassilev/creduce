@@ -2,7 +2,7 @@
 
 
 Before compiling C-Reduce yourself, you might want to see if your OS
-comes with a precompiled package for C-Reduce. Ubuntu, Debian, Gentoo,
+comes with a precompiled package for C-Reduce.  Ubuntu, Debian, Gentoo,
 and Mac OS X (Homebrew) all do.
 
 
@@ -133,6 +133,7 @@ The generated Makefiles require GNU Make.  BSD Make will not work.
 If you see weird make-time errors, please check that you are using
 GNU Make.
 
+<<<<<<< HEAD:INSTALL.md
 
 ##Building and installing C-Reduce with cmake:
 
@@ -143,19 +144,22 @@ make -j4
 make install
 ```
 
+The C-Reduce source tree contains files for a CMake-based build system.
+BUILDING WITH CMAKE IS *UNSUPPORTED* in this release of C-Reduce, and
+likely it does not work.  We intend to fix the CMake-based build system
+and support it in the future.
 
 ##Regarding LLVM versions:
 
-
-Released versions of C-Reduce, and also our master branch at Github,
+Released versions of C-Reduce, and also our master branch at GitHub,
 need to be compiled against specific released versions of LLVM, as
 noted in this file.
 
 Our GitHub repo usually also has a branch called llvm-svn-compatible
 that supports building C-Reduce against LLVMs that are newer than the
-last released version. The most recent version of LLVM that the
+last released version.  The most recent version of LLVM that the
 llvm-svn-compatible branch is known to compile against is recorded in
-LAST_KNOWN_WORKING_LLVM. C-Reduce may happen to also build against
+LAST_KNOWN_WORKING_LLVM.  C-Reduce may happen to also build against
 revisions before or after this, but we make no guarantees.
 
 
