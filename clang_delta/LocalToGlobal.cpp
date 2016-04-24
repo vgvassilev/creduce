@@ -190,27 +190,23 @@ bool LToGASTVisitor::makeLocalAsGlobalVar(FunctionDecl *FD,
                                           VarDecl *LV)
 {
   std::string GlobalVarStr;
-  std::string NewName = ConsumerInstance->getNewName();
+  llvm::raw_string_ostream Out(GlobalVarStr);
+  // Change the name of the decl to match the expected name before printout.
+  ASTContext& C = *ConsumerInstance->Context;
+  DeclarationName NewName (&C.Idents.get(ConsumerInstance->getNewName()));
+  LV->setDeclName(NewName);
+  LV->print(Out);
+  Out << ";\n";
+  Out.flush();
 
-  QualType T = LV->getType();
-  T.getAsStringInternal(NewName, 
-                        ConsumerInstance->Context->getPrintingPolicy());
-
-  GlobalVarStr = NewName;
-
-  if (LV->hasInit()) {
-    const Expr *InitExpr = LV->getInit();
-    std::string InitStr("");
-    ConsumerInstance->RewriteHelper->getExprString(InitExpr, 
-                                                   InitStr);
-    GlobalVarStr += " = ";
-    GlobalVarStr += InitStr; 
+  auto& TheRewriter = ConsumerInstance->TheRewriter;
+  for (DeclContext* DC = FD; DC; DC = DC->getParent()) {
+    if (DC->getParent() && DC->getParent()->isTranslationUnit()) {
+      TheRewriter.InsertTextBefore(cast<Decl>(DC)->getLocStart(), GlobalVarStr);
+    }
   }
 
-  GlobalVarStr += ";\n";
-
-  return ConsumerInstance->RewriteHelper->
-           insertStringBeforeFunc(FD, GlobalVarStr);
+  return true;
 }
 
 bool LToGASTVisitor::VisitDeclStmt(DeclStmt *DS)
