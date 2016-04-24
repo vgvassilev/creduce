@@ -117,9 +117,9 @@ void Transformation::outputTransformedSource(llvm::raw_ostream &OutStream)
   std::stringstream ss(output);
   std::string to;
   while(std::getline(ss, to)) {
-    if (std::regex_match(to, std::regex("//CHECK(:|-).*")))
+    if (std::regex_match(to, std::regex("//( *)CHECK(:|-).*")))
       continue;
-    if (std::regex_match(to, std::regex("//RUN:.*")))
+    if (std::regex_match(to, std::regex("//( *)RUN:.*")))
       continue;
 
     OutStream << to << '\n';
