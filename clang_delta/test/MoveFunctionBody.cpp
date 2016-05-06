@@ -27,13 +27,11 @@ void functionDecl(int x, float y = 1.0);
 void functionDecl(int x, float y) {
   x = y;
 }
-
 //CHECK-TWO: void functionDecl(int x, float y = 1.) {
 //CHECK-TWO-NEXT: x = y;
 //CHECK-TWO-NEXT: }
 //CHECK-TWO-NOT: void functionDecl(int x, float y = 1.0);
 //CHECK-TWO-NOT: void functionDecl(int, float);
-
 
 struct S {
   void f() const;
