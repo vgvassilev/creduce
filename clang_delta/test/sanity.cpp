@@ -1,5 +1,5 @@
 //RUN: %clangdelta --help %s | FileCheck %s
-//RUN: %clangdelta --help %s | FileCheck --prefix CHECK-SPACE %s
+//RUN: %clangdelta --help %s | FileCheck --check-prefix CHECK-SPACE %s
 
 //CHECK: Usage:
 // CHECK-SPACE: Usage:
