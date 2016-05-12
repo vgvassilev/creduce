@@ -49,8 +49,7 @@ sub do_transform($$) {
     my $includes = 0;
     my $matched;
     while (my $line = <INF>) {
-	# N.B. not chasing down system includes!
-        if ($line =~ /^\s*#\s*include\s*\"(.*?)\"/) {
+        if ($line =~ /^\s*#\s*include\s*(\"|\<)(.*?)(\"|\>)/) {
 	    my $incfile = $1;
 	    print "found include file '$incfile'\n" if $DEBUG;
             $includes++;
