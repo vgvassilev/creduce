@@ -51,8 +51,8 @@ LLVMCXXFLAGS	:= $(shell \
 		     grep -v -e '^-W' \
 			     -e '^-w$$' \
 			     -e '^-pedantic' \
-			     -e '^-f[-a-z]diagnostics' \
-			     -e '^-f[-a-z]show' \
+			     -e '^-f[a-z-]*diagnostics' \
+			     -e '^-f[a-z-]*show' \
 			     -e '^-g' \
 			     -e '^-O$$' \
 			     -e '^-O[0-9s]' \
@@ -93,6 +93,8 @@ clang_delta_CXXFLAGS = \
 # libraries.  So probably, we could move `LLVMLDFLAGS' back to the definition
 # of `clang_delta_LDFLAGS'.  I'll do that later.
 clang_delta_LDADD = \
+	-lclangStaticAnalyzerFrontend -lclangStaticAnalyzerCheckers \
+	-lclangStaticAnalyzerCore \
 	-lclangFrontendTool -lclangFrontend -lclangDriver -lclangSerialization \
 	-lclangCodeGen -lclangParse -lclangSema -lclangAnalysis \
 	-lclangRewriteFrontend -lclangRewrite -lclangAST -lclangBasic -lclangEdit -lclangLex \
