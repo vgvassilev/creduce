@@ -56,10 +56,10 @@ Install these packages either manually or using a package manager:
 
   (No need to compile it: the appropriate "Clang binaries" package is
   all you need. If you use one of the binary packages, you may need to
-  install additional packages that the binary package depends on. For
-  example, the "Clang for x86_64 Ubuntu 14.04" binary package depends on
-  "libedit2" and "libtinfo5". You may need to install these, e.g.:
-  "sudo apt-get install libedit-dev libtinfo-dev".)
+  install additional packages that the binary package depends on.  For
+  example, the "Clang for x86_64 Ubuntu 14.04" binary package depends
+  on "libtinfo5".  You may need to install this, e.g.:
+  "sudo apt-get install libtinfo-dev".)
 
 * Perl modules:
   * Exporter::Lite
