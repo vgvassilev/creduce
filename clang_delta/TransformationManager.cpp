@@ -53,8 +53,16 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
   }
 
   std::vector<const char*> Args;
+
+  TargetOptions &TargetOpts = ClangInstance->getTargetOpts();
+  if (const char *env = getenv("CREDUCE_TARGET_TRIPLE"))
+    TargetOpts.Triple = std::string(env);
+  else
+    TargetOpts.Triple = LLVM_DEFAULT_TARGET_TRIPLE;
+  llvm::Triple T(TargetOpts.Triple);
+
   if ((IK == IK_C) || (IK == IK_PreprocessedC)) {
-    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_C);
+    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_C, T);
   }
   else if ((IK == IK_CXX) || (IK == IK_PreprocessedCXX)) {
     // ISSUE: it might cause some problems when building AST
@@ -63,7 +71,7 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
 
     Args.push_back("-x");
     Args.push_back("c++");
-    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_CXX);
+    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_CXX, T);
   }
   else if(IK == IK_OpenCL) {
     //Commandline parameters
@@ -85,7 +93,7 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
     Args.push_back("clc/clc.h");
     Args.push_back("-fno-builtin");
 
-    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_OpenCL);
+    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_OpenCL, T);
   }
   else {
     ErrorMsg = "Unsupported file type!";
@@ -96,15 +104,7 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
                                      &Args[0] + Args.size(),
                                      ClangInstance->getDiagnostics());
 
-  TargetOptions &TargetOpts = ClangInstance->getTargetOpts();
-
-  if (const char *env = getenv("CREDUCE_TARGET_TRIPLE")) {
-    TargetOpts.Triple = std::string(env);
-  } else {
-    TargetOpts.Triple = LLVM_DEFAULT_TARGET_TRIPLE;
-  }
-
-  TargetInfo *Target = 
+  TargetInfo *Target =
     TargetInfo::CreateTargetInfo(ClangInstance->getDiagnostics(),
                                  ClangInstance->getInvocation().TargetOpts);
   ClangInstance->setTarget(Target);
@@ -137,14 +137,8 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
   ClangInstance->setASTConsumer(
     std::unique_ptr<ASTConsumer>(CurrentTransformationImpl));
   Preprocessor &PP = ClangInstance->getPreprocessor();
-#if CLANG_VERSION_MAJOR == 3 && CLANG_VERSION_MINOR == 7
-    PP.getBuiltinInfo().InitializeBuiltins(PP.getIdentifierTable(),
   PP.getBuiltinInfo().initializeBuiltins(PP.getIdentifierTable(),
                                          PP.getLangOpts());
-#else
-  PP.getBuiltinInfo().initializeBuiltins(PP.getIdentifierTable(),
-                                         PP.getLangOpts());
-#endif
   if (!ClangInstance->InitializeSourceManager(FrontendInputFile(SrcFileName, IK))) {
     ErrorMsg = "Cannot open source file!";
     return false;
