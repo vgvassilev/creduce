@@ -127,7 +127,8 @@ void RemoveDecl::HandleTranslationUnit(ASTContext &Ctx)
     //RewriteHelper->getStringBetweenLocs(s, R.getBegin(), R.getEnd());
   }
   else {
-    for (int i = ToCounter; i >= TransformationCounter; --i) {
+    // ... --to-counter=2 --counter=1
+    for (int i = ToCounter - 1; i >= TransformationCounter; --i) {
       D = Decls[i-1];
       RewriteHelper->removeDecl(D);
     }

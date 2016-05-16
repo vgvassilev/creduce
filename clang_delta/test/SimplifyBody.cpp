@@ -1,4 +1,5 @@
 //RUN: %clangdelta --transformation=simplify-body --counter=1 %s 2>&1 | FileCheck %s
+//RUN: %clangdelta --transformation=simplify-body --counter=1 --to-counter=2 %s 2>&1 | FileCheck %s
 //RUN: %clangdelta --transformation=simplify-body --counter=1 --to-counter=4 %s 2>&1 | FileCheck  -check-prefix=CHECK-MULTI %s
 //RUN: %clangdelta --query-instances=simplify-body %s 2>&1 | FileCheck -check-prefix=CHECK-QI %s
 

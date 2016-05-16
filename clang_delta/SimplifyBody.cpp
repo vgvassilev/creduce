@@ -174,7 +174,8 @@ void SimplifyBody::HandleTranslationUnit(ASTContext &Ctx)
     simplifyFunctionBody(D, TheRewriter);
   }
   else {
-    for (int i = ToCounter; i >= TransformationCounter; --i) {
+    // ... --to-counter=2 --counter=1
+    for (int i = ToCounter - 1; i >= TransformationCounter; --i) {
       D = Decls[i-1];
       simplifyFunctionBody(D, TheRewriter);
     }
