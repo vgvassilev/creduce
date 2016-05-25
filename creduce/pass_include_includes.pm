@@ -14,6 +14,7 @@ use strict;
 use warnings;
 
 use File::Copy;
+use File::Spec;
 use creduce_utils;
 
 my $MAX_INC_SIZE = 300;
@@ -45,15 +46,37 @@ sub do_transform($$) {
     open INF, "<$cfile" or die;
     my $tmpfile = File::Temp::tmpnam();
     open OUTF, ">$tmpfile" or die;
-
     my $includes = 0;
     my $matched;
     while (my $line = <INF>) {
         if ($line =~ /^\s*#\s*include\s*(\"|\<)(.*?)(\"|\>)/) {
-	    my $incfile = $1;
-	    print "found include file '$incfile'\n" if $DEBUG;
+	    my $incfile = $2;
+	    print "found include file '$incfile' (included by $cfile) \n" if $DEBUG;
             $includes++;
             if ($includes == $index) {
+                if (!-r $incfile) {
+                    # Repect the include paths if present:
+                    my @creduce_inc_paths = split(/:/, $ENV{CREDUCE_INCLUDE_PATH});
+                    foreach my $incdir (@creduce_inc_paths) {
+                        $incdir = File::Spec->rel2abs($incdir);
+
+                        next if !-d $incdir;
+
+                        my @found;
+                        my $base_name = File::Basename::basename($incfile);
+
+                        File::Find::find(sub { push @found,
+                                               $File::Find::name if (/$base_name/i)
+                                         },
+                                         $incdir);
+                        print "INCFILE2 $incfile \n";
+                        print "FOUND: @found \n";
+                        if (@found) {
+                            $incfile = $found[0];
+                            last;
+                        }
+                    }
+                }
 		if ((-r $incfile) &&
 		    ((-s $incfile) < $MAX_INC_SIZE) &&
 		    (open INC, "<$incfile")) {
