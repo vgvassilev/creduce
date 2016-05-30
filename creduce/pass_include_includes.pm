@@ -69,8 +69,8 @@ sub do_transform($$) {
                                                $File::Find::name if (/$base_name/i)
                                          },
                                          $incdir);
-                        print "INCFILE2 $incfile \n";
-                        print "FOUND: @found \n";
+                        print "INCFILE2 $incfile \n" if $DEBUG;
+                        print "FOUND: @found \n" if $DEBUG;
                         if (@found) {
                             $incfile = $found[0];
                             last;
