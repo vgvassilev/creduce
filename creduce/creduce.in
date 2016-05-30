@@ -720,6 +720,12 @@ sub delta_pass ($) {
 	    next;
 	}
 
+        # FIXME: This is a gross hack, which ensures stripping only one level of
+        # includes.
+        if ($delta_result && $delta_method eq "pass_include_includes") {
+            next;
+        }
+
 	goto AGAIN;
     }
 }
