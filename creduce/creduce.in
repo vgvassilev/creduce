@@ -722,7 +722,7 @@ sub delta_pass ($) {
 
         # FIXME: This is a gross hack, which ensures stripping only one level of
         # includes.
-        if (!$skip && !$stopped && $delta_method eq "pass_include_includes") {
+        if (!$skip && !$stopped && scalar(@variants)==0 && $delta_method eq "pass_include_includes") {
             next;
         }
 
