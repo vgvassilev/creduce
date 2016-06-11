@@ -1,10 +1,14 @@
 //RUN: %clang -fsyntax-only %s
+//RUN: %clangdelta --query-instances=move-function-body %s 2>&1 | grep "instances: 4"
+
 //RUN: %clangdelta --transformation=move-function-body --counter=1 %s 2>&1 | FileCheck --check-prefix CHECK-ONE %s
 //RUN: %clangdelta --transformation=move-function-body --counter=1 %s 2>&1 | %clang -fsyntax-only -x c++ -
 //RUN: %clangdelta --transformation=move-function-body --counter=2 %s 2>&1 | FileCheck --check-prefix CHECK-TWO %s
 //RUN: %clangdelta --transformation=move-function-body --counter=2 %s 2>&1 | %clang -fsyntax-only -x c++ -
 //RUN: %clangdelta --transformation=move-function-body --counter=3 %s 2>&1 | FileCheck --check-prefix CHECK-THREE %s
 //RUN: %clangdelta --transformation=move-function-body --counter=3 %s 2>&1 | %clang -fsyntax-only -x c++ -
+//RUN: %clangdelta --transformation=move-function-body --counter=4 %s 2>&1 | FileCheck --check-prefix CHECK-FOUR %s
+//RUN: %clangdelta --transformation=move-function-body --counter=4 %s 2>&1 | %clang -fsyntax-only -x c++ -
 
 template <typename>
 class TriaIterator {};
@@ -44,3 +48,10 @@ void S::f() const {
 //CHECK-THREE-NEXT:    int i = 42;
 //CHECK-THREE-NEXT:}
 //CHECK-THREE-NOT:void S::f() const {
+
+namespace A {
+  void f();
+  void f() { }
+//CHECK-FOUR-NOT: void f();
+  void dont_crash() { } // We don't have a decl to merge with, we should skip.
+}
