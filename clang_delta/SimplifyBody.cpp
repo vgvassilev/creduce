@@ -174,6 +174,16 @@ void SimplifyBody::HandleTranslationUnit(ASTContext &Ctx)
     simplifyFunctionBody(D, TheRewriter);
   }
   else {
+    // FIXME: This is a gross hack to workaround a creduce issue. The creduce
+    // driver asks clang_delta (via --query-instances) how many transformations
+    // it can do and stores the result. It seems that in some cases when there
+    // is speculation going on, i.e. when creduce runs in parallel mode one of
+    // the workers removes cache contents from the file. This invalidates the
+    // clang_delta's promise and subsequent calls end up with crashes. Ideally,
+    // we have to track down the driver and try to understand what exactly goes
+    // wrong there.
+    if (TransformationCounter < ToCounter)
+      ToCounter = TransformationCounter + 1;
     // ... --to-counter=2 --counter=1
     for (int i = ToCounter - 1; i >= TransformationCounter; --i) {
       D = Decls[i-1];
