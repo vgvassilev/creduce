@@ -193,10 +193,16 @@ void SimplifyIf::simplifyIfStmt(void)
 {
   const Expr *Cond = TheIfStmt->getCond();
   TransAssert(Cond && "Bad Cond Expr!");
-  std::string CondStr;
-  RewriteHelper->getExprString(Cond, CondStr);
-  CondStr += ";";
-  RewriteHelper->addStringBeforeStmt(TheIfStmt, CondStr, NeedParen);
+
+  // When the TU is broken (e.g. clang compiles invalid code), a dummy
+  // OpaqueValueExpr is created to help compiler error recovery.
+  // See clang::Sema::actOnIfStmt (SemaStmt.cpp:535).
+  if (!isa<OpaqueValueExpr>(Cond)) {
+     std::string CondStr;
+     RewriteHelper->getExprString(Cond, CondStr);
+     CondStr += ";";
+     RewriteHelper->addStringBeforeStmt(TheIfStmt, CondStr, NeedParen);
+  }
 
   RewriteHelper->removeIfAndCond(TheIfStmt);
 
