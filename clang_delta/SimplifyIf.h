@@ -11,7 +11,6 @@
 #ifndef SIMPLIFY_IF_H
 #define SIMPLIFY_IF_H
 
-#include <string>
 #include "Transformation.h"
 
 namespace clang {
