@@ -114,6 +114,11 @@ void RemoveDecl::HandleTranslationUnit(ASTContext &Ctx)
     return;
   }
 
+  if (ToCounter > ValidInstanceNum) {
+    TransError = TransToCounterTooBigError;
+    return;
+  }
+
   Ctx.getDiagnostics().setSuppressAllDiagnostics(false);
 
   TransAssert(Decls.size() && "NULL TheDecl!");
