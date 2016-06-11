@@ -103,6 +103,7 @@ set(TRANSFORMATION_HEADERS
   RenameFun.h
   RenameParam.h
   RenameVar.h
+  ReplaceArrayAccessWithIndex.h
   ReplaceArrayIndexVar.h
   ReplaceCallExpr.h
   ReplaceClassWithBaseTemplateSpec.h
@@ -173,6 +174,7 @@ set(TRANSFORMATION_SOURCES
   RenameFun.cpp
   RenameParam.cpp
   RenameVar.cpp
+  ReplaceArrayAccessWithIndex.cpp
   ReplaceArrayIndexVar.cpp
   ReplaceCallExpr.cpp
   ReplaceClassWithBaseTemplateSpec.cpp
