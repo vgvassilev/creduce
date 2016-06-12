@@ -15,11 +15,9 @@
 #include "llvm/ADT/SmallPtrSet.h"
 
 namespace clang {
-  class DeclGroupRef;
   class ASTContext;
   class ClassTemplateDecl;
   class NamedDecl;
-  class CXXRecordDecl;
   class ClassTemplatePartialSpecializationDecl;
   class TemplateParameterList;
   class TemplateName;

@@ -23,7 +23,7 @@
 using namespace clang;
 using namespace llvm;
 
-static const char *DescriptionMsg = 
+static const char *DescriptionMsg =
 "Change a class template to a class if this class template: \n\
    * has only one parameter, and \n\
    * the parameter is unused. \n";
