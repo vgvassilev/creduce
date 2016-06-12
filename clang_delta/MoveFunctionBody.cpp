@@ -43,6 +43,10 @@ bool MoveFunctionBody::VisitFunctionDecl(FunctionDecl *FD) {
   if (isInIncludedFile(FD))
     return true;
 
+  // If there is only one declaration on the redecl chain, we are done.
+  if (std::distance(FD->redecls_begin(), FD->redecls_end()) == 1)
+    return true;
+
   if (FD->isThisDeclarationADefinition() && !FuncDefs.count(FD))
     FuncDefs.insert(FD);
   return true;

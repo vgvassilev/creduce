@@ -96,14 +96,15 @@ static void simplifyFunctionBody(FunctionDecl* FD, Rewriter& RW) {
   //                                          static some_type s; return s;
   // 4. some_type f() { ...; return ...; } - sometimes we can return some_type();
   // For now we will handle 1. and 2.
-  assert(FD);
-  assert(FD->hasBody() && "Trying to work with a declaration not a definition");
+  TransAssert(FD);
+  TransAssert(FD->hasBody() &&
+              "Trying to work with a declaration not a definition");
   CompoundStmt* Body = cast<CompoundStmt>(FD->getBody());
   SourceLocation LBracLoc = Body->getLBracLoc();
   SourceLocation RBracLoc = Body->getRBracLoc();
   SourceRange Range
     = RW.getSourceMgr().getExpansionRange(SourceRange(LBracLoc, RBracLoc));
-  assert (RW.getRangeSize(Range) != -1 && "Bad range!");
+  TransAssert (RW.getRangeSize(Range) != -1 && "Bad range!");
 
   QualType returnType = FD->getReturnType();
   // Case 1.
@@ -136,7 +137,7 @@ static void simplifyFunctionBody(FunctionDecl* FD, Rewriter& RW) {
     return;
   }
 
-  assert(isSupportedReturnType(FD->getReturnType()));
+  TransAssert(isSupportedReturnType(FD->getReturnType()));
 }
 
 void SimplifyBody::HandleTranslationUnit(ASTContext &Ctx)
@@ -149,6 +150,11 @@ void SimplifyBody::HandleTranslationUnit(ASTContext &Ctx)
 
   if (TransformationCounter > ValidInstanceNum) {
     TransError = TransMaxInstanceError;
+    return;
+  }
+
+  if (ToCounter > ValidInstanceNum) {
+    TransError = TransToCounterTooBigError;
     return;
   }
 

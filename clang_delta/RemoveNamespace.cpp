@@ -1002,31 +1002,7 @@ bool RemoveNamespace::handleOneNamespaceDecl(NamespaceDecl *ND)
 
 void RemoveNamespace::removeNamespace(const NamespaceDecl *ND)
 {
-  // Remove the right brace first
-  SourceLocation StartLoc = ND->getRBraceLoc();
-  if (StartLoc.isValid())
-    TheRewriter.RemoveText(StartLoc, 1);
-
-  // Then remove name and the left brace
-  StartLoc = ND->getLocStart();
-  TransAssert(StartLoc.isValid() && "Invalid Namespace LocStart!");
-
-  const char *StartBuf = SrcManager->getCharacterData(StartLoc);
-  SourceRange NDRange = ND->getSourceRange();
-  SourceLocation EndLoc;
-  if (NDRange.isValid()) {
-    int RangeSize = TheRewriter.getRangeSize(NDRange);
-    TransAssert((RangeSize != -1) && "Bad Namespace Range!");
-    std::string NDStr(StartBuf, RangeSize);
-    size_t Pos = NDStr.find('{');
-    TransAssert((Pos != std::string::npos) && "Cannot find LBrace!");
-    EndLoc = StartLoc.getLocWithOffset(Pos);
-  }
-  else {
-    EndLoc = RewriteHelper->getEndLocationUntil(StartLoc, '{');
-  }
-
-  TheRewriter.RemoveText(SourceRange(StartLoc, EndLoc));
+   RewriteHelper->removeDecl(ND);
 }
 
 bool RemoveNamespace::getNewNameFromNameMap(const NamedDecl *ND,

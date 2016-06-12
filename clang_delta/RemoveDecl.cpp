@@ -67,11 +67,11 @@ static bool containsDecl(Decl* oldD, Decl* newD, const SourceManager& SM) {
 #ifndef NDEBUG
   // In cases where the one sloc is in the old decl and the other is not.
   if (SM.isBeforeInSLocAddrSpace(oldR.getBegin(), newR.getBegin()))
-    assert(SM.isBeforeInSLocAddrSpace(oldR.getEnd(), newR.getEnd())
-           && "Partial source range.");
+    TransAssert(SM.isBeforeInSLocAddrSpace(oldR.getEnd(), newR.getEnd())
+                && "Partial source range.");
   if (SM.isBeforeInSLocAddrSpace(newR.getEnd(), oldR.getEnd()))
-    assert(SM.isBeforeInSLocAddrSpace(newR.getBegin(), oldR.getBegin())
-           && "Partial source range.");
+    TransAssert(SM.isBeforeInSLocAddrSpace(newR.getBegin(), oldR.getBegin())
+                && "Partial source range.");
 #endif //NDEBUG
   return false;
 }
@@ -111,6 +111,11 @@ void RemoveDecl::HandleTranslationUnit(ASTContext &Ctx)
 
   if (TransformationCounter > ValidInstanceNum) {
     TransError = TransMaxInstanceError;
+    return;
+  }
+
+  if (ToCounter > ValidInstanceNum) {
+    TransError = TransToCounterTooBigError;
     return;
   }
 
