@@ -92,6 +92,7 @@ my @options = (
     ["--add-pass",            "call",    0, \&add_pass,        "Add the specified pass to the schedule", "<pass> <sub-pass> <priority>"],
     ["--skip-key-off",        "const",   1, \$SKIP_KEY_OFF,    "Disable skipping the rest of the current pass when \"s\" is pressed"],
     ["--max-improvement",     "integer", 1, \$MAX_WIN,         "Largest improvement in file size from a single transformation that C-Reduce should accept (useful only to slow C-Reduce down)", "<bytes>"],
+    ["--attach",              "call",    1, \&add_attached,    "Comma separated list of files to be copied together with the reduced files, but not reduced on its own"],
 );
 
 @options = sort { return @{$a}[0] cmp @{$b}[0]; } @options;
@@ -202,6 +203,17 @@ sub add_pass {
     return 1;
 }
 
+my @attached;
+
+sub add_attached {
+    my ($opt, $args, $dest) = @_;
+    my $csv = shift @$args;
+    for my $x (split(/,/,$csv)) {
+	push @attached,File::Spec->rel2abs($x);
+    }
+    return 1
+}
+
 ######################################################################
 
 my $total_file_size = 0;
@@ -289,7 +301,7 @@ sub delta_test () {
 }
 
 sub copy_files_here() {
-    foreach my $f (@toreduce) {
+    foreach my $f (@toreduce,@attached) {
         my $relf = File::Spec->abs2rel($f, $orig_dir);
         make_path(dirname($relf));
         File::Copy::copy($f, $relf) or die $!;
