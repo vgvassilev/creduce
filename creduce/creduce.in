@@ -55,6 +55,7 @@ my $GIVEUP_CONSTANT = 50000;
 my $PRINT_DIFF = 0;
 my $SANITIZE = 0;
 my $SKIP_FIRST;
+my $SKIP_MIDDLE;
 my $SAVE_TEMPS;
 my $SLLOOWW = 0;
 my $NODEFAULT;
@@ -67,12 +68,14 @@ my $TIDY = 0;
 my $ALSO_INTERESTING = -1;
 my $NOKILL = 0;
 my $MAX_WIN;
+my $SINGLE_LOOP;
 
 my @options = (
     ["--n",                   "integer", 1, \$NPROCS,          "Number of cores to use; C-Reduce tries to automatically pick a good setting but its choice may be too low or high for your situation", "<N>"],
     ["--tidy",                "const",   1, \$TIDY,            "Do not make a backup copy of each file to reduce as file.orig"],
     ["--shaddap",             "const",   1, \$SILENT_PASS_BUGS, "Suppress output about non-fatal internal errors"],
     ["--die-on-pass-bug",     "const",   1, \$DIE_ON_PASS_BUG, "Terminate C-Reduce if a pass encounters an otherwise non-fatal problem"],
+    ["--single-loop",         "const",   1, \$SINGLE_LOOP,     "Runs a single loop and then exits (also skips final passes)"],
     ["--sanitize",            "const",   1, \$SANITIZE,        "Attempt to obscure details from the original source file"],
     ["--sllooww",             "const",   1, \$SLLOOWW,         "Try harder to reduce, but perhaps take a long time to do so"],
     ["--also-interesting",    "integer", 1, \$ALSO_INTERESTING, "A process exit code (somewhere in the range 64-113 would be usual) that, when returned by the interestingness test, will cause C-Reduce to save a copy of the variant", "<exitcode>"],
@@ -82,12 +85,14 @@ my @options = (
     ["--print-diff",          "const",   1, \$PRINT_DIFF,      "Show changes made by transformations, for debugging"],
     ["--save-temps",          "const",   1, \$SAVE_TEMPS,      "Don't delete /tmp/creduce-xxxxxx directories on termination"],
     ["--skip-initial-passes", "const",   1, \$SKIP_FIRST,      "Skip initial passes (useful if input is already partially reduced)"],
+    ["--skip-middle-passes",  "const",   1, \$SKIP_MIDDLE,     "Skip the normal passes (usually useful together with skip initial to only run final passes)"],
     ["--timing",              "const",   1, \$TIMING,          "Print timestamps about reduction progress"],
     ["--timeout",             "integer", 1, \$TIMEOUT_IN_SECONDS, "Interestingness test timeout in seconds."],
     ["--no-default-passes",   "const",   1, \$NODEFAULT,       "Start with an empty pass schedule"],
     ["--add-pass",            "call",    0, \&add_pass,        "Add the specified pass to the schedule", "<pass> <sub-pass> <priority>"],
     ["--skip-key-off",        "const",   1, \$SKIP_KEY_OFF,    "Disable skipping the rest of the current pass when \"s\" is pressed"],
     ["--max-improvement",     "integer", 1, \$MAX_WIN,         "Largest improvement in file size from a single transformation that C-Reduce should accept (useful only to slow C-Reduce down)", "<bytes>"],
+    ["--attach",              "call",    1, \&add_attached,    "Comma separated list of files to be copied together with the reduced files, but not reduced on its own"],
 );
 
 @options = sort { return @{$a}[0] cmp @{$b}[0]; } @options;
@@ -198,6 +203,17 @@ sub add_pass {
     return 1;
 }
 
+my @attached;
+
+sub add_attached {
+    my ($opt, $args, $dest) = @_;
+    my $csv = shift @$args;
+    for my $x (split(/,/,$csv)) {
+	push @attached,File::Spec->rel2abs($x);
+    }
+    return 1
+}
+
 ######################################################################
 
 my $total_file_size = 0;
@@ -285,7 +301,7 @@ sub delta_test () {
 }
 
 sub copy_files_here() {
-    foreach my $f (@toreduce) {
+    foreach my $f (@toreduce,@attached) {
         my $relf = File::Spec->abs2rel($f, $orig_dir);
         make_path(dirname($relf));
         File::Copy::copy($f, $relf) or die $!;
@@ -720,12 +736,6 @@ sub delta_pass ($) {
 	    next;
 	}
 
-        # FIXME: This is a gross hack, which ensures stripping only one level of
-        # includes.
-        if (!$skip && !$stopped && scalar(@variants)==0 && $delta_method eq "pass_include_includes") {
-            next;
-        }
-
 	goto AGAIN;
     }
 }
@@ -737,8 +747,8 @@ sub line_delta_pass ($) {
 }
 
 my @all_methods = (
-    { "name" => "pass_include_includes", "arg" => "0",               "pri" => 100,  "first_pass_pri" =>  0, },
-    { "name" => "pass_includes", "arg" => "0",                                      "first_pass_pri" =>  0, },
+    { "name" => "pass_include_includes", "arg" => "0",               "pri" => 100, },
+    { "name" => "pass_includes", "arg" => "0",                       "pri" => 10000,"first_pass_pri" =>  0, },
     # Selectively remove preprocessor conditions.
     { "name" => "pass_unifdef",  "arg" => "0",                       "pri" => 450,  "first_pass_pri" =>  0, },
     { "name" => "pass_comments", "arg" => "0",                       "pri" => 451,  "first_pass_pri" =>  0, },
@@ -1070,24 +1080,28 @@ if (not $SKIP_FIRST) {
 # iterate to global fixpoint
 print "MAIN PASSES\n" if $DEBUG;
 
-while (1) {
-    my $next = pass_iterator("pri");
-    while (my $item = $next->()) {
-	delta_pass ($item);
+if (not $SKIP_MIDDLE) {
+    while (1) {
+	my $next = pass_iterator("pri");
+	while (my $item = $next->()) {
+	    delta_pass ($item);
+	}
+	$pass_num++;
+	my $s = 0;
+	foreach my $f (@toreduce) {
+	    $s += -s $f;
+	}
+	last if $SINGLE_LOOP;
+	print "Termination check: size was $total_file_size; now $s\n";
+	last if ($s >= $total_file_size);
+	$total_file_size = $s;
     }
-    $pass_num++;
-    my $s = 0;
-    foreach my $f (@toreduce) {
-	$s += -s $f;
-    }
-    print "Termination check: size was $total_file_size; now $s\n";
-    last if ($s >= $total_file_size);
-    $total_file_size = $s;
 }
 
 # some passes we run last since they work best as cleanup
-print "CLEANUP PASS\n" if $DEBUG;
+if (not $SINGLE_LOOP)
 {
+    print "CLEANUP PASS\n" if $DEBUG;
     my $next = pass_iterator("last_pass_pri");
     while (my $item = $next->()) {
 	delta_pass ($item);
