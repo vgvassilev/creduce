@@ -31,7 +31,7 @@ and both p1 and p2 are not used anywhere except comparisons between \
 p2 and &p1.\n";
 
 static RegisterTransformation<ReducePointerPairs>
-         Trans("remove-pointer-pairs", DescriptionMsg);
+         Trans("reduce-pointer-pairs", DescriptionMsg);
 
 class ReducePointerPairsCollectionVisitor : public 
   RecursiveASTVisitor<ReducePointerPairsCollectionVisitor> {
