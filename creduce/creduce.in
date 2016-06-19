@@ -67,6 +67,7 @@ my $SILENT_PASS_BUGS = 0;
 my $TIDY = 0;
 my $ALSO_INTERESTING = -1;
 my $NOKILL = 0;
+my $NOSETPGRP = 0;
 my $MAX_WIN;
 my $SINGLE_LOOP;
 
@@ -80,7 +81,8 @@ my @options = (
     ["--sllooww",             "const",   1, \$SLLOOWW,         "Try harder to reduce, but perhaps take a long time to do so"],
     ["--also-interesting",    "integer", 1, \$ALSO_INTERESTING, "A process exit code (somewhere in the range 64-113 would be usual) that, when returned by the interestingness test, will cause C-Reduce to save a copy of the variant", "<exitcode>"],
     ["--debug",               "const",   1, \$DEBUG,           "Print debug information"],
-    ["--nokill",              "const",   1, \$NOKILL,          "Wait for parallel instances to terminate on their own instead of killing them (only useful for debugging)"],
+    ["--no-kill",             "const",   1, \$NOKILL,          "Wait for parallel instances to terminate on their own instead of killing them (only useful for debugging)"],
+    ["--no-setpgrp",          "const",   1, \$NOSETPGRP,       "Don't create a new process group for each invocation of the interestingness test"],
     ["--no-give-up",          "const",   0, \$GIVEUP_CONSTANT, "Don't give up on a pass that hasn't made progress for ${GIVEUP_CONSTANT} iterations"],
     ["--print-diff",          "const",   1, \$PRINT_DIFF,      "Show changes made by transformations, for debugging"],
     ["--save-temps",          "const",   1, \$SAVE_TEMPS,      "Don't delete /tmp/creduce-xxxxxx directories on termination"],
@@ -143,6 +145,13 @@ commands:
 This should result in "0" being echoed to the terminal. If this does
 not happen, the interestingness test is flawed and C-Reduce won't be
 able to make use of it.
+
+By default, C-Reduce invokes the interestingness test in a new process
+group. In rare cases, such as when the interestingness test invokes
+GDB, this can be a problem. If so, you may use the --no-setpgrp
+command line option to suppress the use of process groups. Be aware
+that this will interfere with C-Reduce's ability to kill off
+subprocesses of an interestingness test.
 
 If you haven\'t written an interestingness test before, please refer to
 this tutorial for additional guidance:
@@ -457,7 +466,7 @@ sub fork_helper($) {
             # put this process (the child) into a process group named by
             # its pid so that we'll be able to kill its entire subtree
             # later
-            setpgrp();
+            setpgrp() unless $NOSETPGRP;
 	    # flip the T/F flag back into a 0/1
             my $res = delta_test();
 	    print "delta_test() returned $res\n" if $DEBUG;
@@ -705,7 +714,7 @@ sub delta_pass ($) {
 		$stopped = 0;
 		
 		$since_success = 0;
-		$method_worked{$delta_method}{$delta_arg}++;
+		$method_worked{$delta_method." :: ".$delta_arg}++;
 		print "delta test success " if $DEBUG;
 		print_pct();
 		print "timestamp ".time()." size ".(-s $fn)."\n"
@@ -713,7 +722,7 @@ sub delta_pass ($) {
 	    } else {
 		print "delta test failure\n" if $DEBUG;
 		$since_success++;
-		$method_failed{$delta_method}{$delta_arg}++;
+		$method_failed{$delta_method." :: ".$delta_arg}++;
 	    }
 	    print "[${pass_num} ${delta_method} :: ${delta_arg}] " if $DEBUG;
 	    File::Path::remove_tree ($tmpdir, {verbose => 0, safe => 0, error => \my $err})
@@ -747,6 +756,7 @@ sub line_delta_pass ($) {
 }
 
 my @all_methods = (
+
     { "name" => "pass_include_includes", "arg" => "0",               "pri" => 100, },
     { "name" => "pass_includes", "arg" => "0",                       "pri" => 10000,"first_pass_pri" =>  0, },
     # Selectively remove preprocessor conditions.
@@ -786,14 +796,22 @@ my @all_methods = (
     { "name" => "pass_special",      "arg" => "c",                  "pri" => 555,  "first_pass_pri" => 110, },
     { "name" => "pass_ternary",  "arg" => "b",                      "pri" => 104,  },
     { "name" => "pass_ternary",  "arg" => "c",                      "pri" => 105,  },
+
     { "name" => "pass_balanced", "arg" => "curly",                  "pri" => 110,  "first_pass_pri" =>  41, },
     { "name" => "pass_balanced", "arg" => "curly2",                 "pri" => 111,  "first_pass_pri" =>  42, },
     { "name" => "pass_balanced", "arg" => "curly3",                 "pri" => 112,  "first_pass_pri" =>  43, },
     { "name" => "pass_balanced", "arg" => "parens",                 "pri" => 113,  },
     { "name" => "pass_balanced", "arg" => "angles",                 "pri" => 114,  },
-    { "name" => "pass_balanced", "arg" => "curly-only",             "pri" => 150,  },
-    { "name" => "pass_balanced", "arg" => "parens-only",            "pri" => 151,  },
-    { "name" => "pass_balanced", "arg" => "angles-only",            "pri" => 152,  },
+    { "name" => "pass_balanced", "arg" => "square",                 "pri" => 115,  },
+    { "name" => "pass_balanced", "arg" => "curly-inside",           "pri" => 150,  },
+    { "name" => "pass_balanced", "arg" => "parens-inside",          "pri" => 151,  },
+    { "name" => "pass_balanced", "arg" => "angles-inside",          "pri" => 152,  },
+    { "name" => "pass_balanced", "arg" => "square-inside",          "pri" => 153,  },
+    { "name" => "pass_balanced", "arg" => "curly-only",             "pri" => 160,  },
+    { "name" => "pass_balanced", "arg" => "parens-only",            "pri" => 161,  },
+    { "name" => "pass_balanced", "arg" => "angles-only",            "pri" => 162,  },
+    { "name" => "pass_balanced", "arg" => "square-only",            "pri" => 163,  },
+
     { "name" => "pass_clang",    "arg" => "remove-namespace",       "pri" => 200,  },
     { "name" => "pass_clang",    "arg" => "aggregate-to-scalar",    "pri" => 201,  },
    #{ "name" => "pass_clang",    "arg" => "binop-simplification",   "pri" => 201,  },
@@ -885,6 +903,7 @@ my @all_methods = (
     { "name" => "pass_clex", "arg" => "rm-toks-14",             "pri" => 9018, },
     { "name" => "pass_clex", "arg" => "rm-toks-15",             "pri" => 9017, },
     { "name" => "pass_clex", "arg" => "rm-toks-16",             "pri" => 9016, },
+
     );
 
 if ($SANITIZE) {
@@ -1110,36 +1129,14 @@ if (not $SINGLE_LOOP)
 
 print "===================== done ====================\n";
 
-sub byworked {
-    my $na = ${$a}{"name"};
-    my $aa = ${$a}{"arg"};
-    my $wa = $method_worked{$na}{$aa};
-    $wa = 0 unless defined($wa);
-    my $nb = ${$b}{"name"};
-    my $ab = ${$b}{"arg"};
-    my $wb = $method_worked{$nb}{$ab};
-    $wb = 0 unless defined($wb);
-    if ($wa == $wb) {
-	if ($na eq $nb) {
-	    return $aa cmp $ab;
-	} else {
-	    return $na cmp $nb;
-	}
-    } else {
-	return $wa <=> $wb;
-    }
-}
-
 print "\n";
 print "pass statistics:\n";
-foreach my $mref (sort byworked @all_methods) {
-    my $method = ${$mref}{"name"};
-    my $arg = ${$mref}{"arg"};
-    my $w = $method_worked{$method}{$arg};
-    $w = 0 unless defined($w);
-    my $f = $method_failed{$method}{$arg};
+foreach my $m (sort { $method_worked{$a} <=> $method_worked{$b} }
+	       keys %method_worked) {
+    my $w = $method_worked{$m};
+    my $f = $method_failed{$m};
     $f = 0 unless defined($f);
-    print "  method $method :: $arg worked $w times and failed $f times\n";
+    print "  method $m worked $w times and failed $f times\n";
 }
 
 foreach my $fn (sort byrsize @toreduce) {
