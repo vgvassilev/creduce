@@ -218,7 +218,14 @@ sub add_attached {
     my ($opt, $args, $dest) = @_;
     my $csv = shift @$args;
     for my $x (split(/,/,$csv)) {
-	push @attached,File::Spec->rel2abs($x);
+        $x = File::Spec->rel2abs($x);
+        # Expand folders into files.
+        if (-d $x) {
+            find(sub {push @attached, $File::Find::name if -f}, $x);
+        }
+        else {
+            push @attached, $x;
+        }
     }
     return 1
 }
@@ -310,7 +317,7 @@ sub delta_test () {
 }
 
 sub copy_files_here() {
-    foreach my $f (@toreduce,@attached) {
+    foreach my $f (@toreduce, @attached) {
         my $relf = File::Spec->abs2rel($f, $orig_dir);
         make_path(dirname($relf));
         File::Copy::copy($f, $relf) or die $!;
