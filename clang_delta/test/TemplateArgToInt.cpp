@@ -13,4 +13,9 @@ namespace complex {
   void f(__complex__ float __z) { (void) __z; }
 }
 
+namespace dependent_template_types {
+  // Make sure we don't crash on instantiation-dependent template names.
+  template <typename T, template<typename X> class Allocator>
+  class zero_allocator : public Allocator<T> {};
+}
 //expected-no-diagnostics

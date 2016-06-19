@@ -686,6 +686,9 @@ const CXXRecordDecl *Transformation::getBaseDeclFromTemplateSpecializationType(
         const TemplateSpecializationType *TSTy)
 {
   TemplateName TplName = TSTy->getTemplateName();
+  if (TplName.isDependent())
+    return nullptr;
+
   TemplateDecl *TplD = TplName.getAsTemplateDecl();
   TransAssert(TplD && "Invalid TemplateDecl!");
   NamedDecl *ND = TplD->getTemplatedDecl();
