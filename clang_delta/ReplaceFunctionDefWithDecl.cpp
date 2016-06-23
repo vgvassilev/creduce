@@ -77,7 +77,8 @@ void ReplaceFunctionDefWithDecl::HandleTranslationUnit(ASTContext &Ctx)
     return;
   }
 
-  if (ToCounter > ValidInstanceNum || TransformationCounter <= ToCounter) {
+  if (ToCounter > ValidInstanceNum ||
+      (ToCounter > 0 && TransformationCounter >= ToCounter)) {
     TransError = TransToCounterTooBigError;
     return;
   }
