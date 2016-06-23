@@ -213,7 +213,6 @@ int main(int argc, char **argv)
     // fail to do transformation
     Die(ErrorMsg);
   }
-  llvm::llvm_shutdown();
   return 0;
 }
 
