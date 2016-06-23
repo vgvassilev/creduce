@@ -109,7 +109,7 @@ void RemoveDecl::HandleTranslationUnit(ASTContext &Ctx)
     return;
   }
 
-  if (ToCounter > ValidInstanceNum) {
+  if (ToCounter > ValidInstanceNum || TransformationCounter <= ToCounter) {
     TransError = TransToCounterTooBigError;
     return;
   }

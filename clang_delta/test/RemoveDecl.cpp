@@ -8,6 +8,7 @@
 //RUN: %clangdelta --transformation=remove-decl --counter=1 --to-counter=31 %s 2>&1 | FileCheck  -check-prefix=CHECK-ALL %s
 //RUN: %clangdelta --query-instances=remove-decl %s 2>&1 | FileCheck -check-prefix=CHECK-QI %s
 
+//CHECK-DIAG: Error: The to-counter value exceeded the number of transformation instances!
 struct S {
    int h;
 //CHECK-MULTI-NOT: h;
