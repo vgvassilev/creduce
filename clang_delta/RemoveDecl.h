@@ -43,10 +43,10 @@ private:
 public:
   void maybeAddDecl(clang::Decl *val) {
     if (!DeclsLookup.count(val) && !isAlreadyInSourceRange(val)) {
+      checkAndReplaceIfDeclEnclosesAnyExistingDecl(val);
       DeclsLookup.insert(val);
       Decls.push_back(val);
       ++ValidInstanceNum;
-      checkAndReplaceIfDeclEnclosesAnyExistingDecl(val);
     }
   }
 
