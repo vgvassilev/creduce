@@ -199,7 +199,13 @@ public:
 
   bool removeFieldDecl(const clang::FieldDecl *FD);
 
-  bool removeDecl(const clang::Decl *D);
+  ///\brief Removes any given decl.
+  ///
+  ///\param[in] D - The decl to be replaced.
+  ///\param[in] IsRecursive - Removes all contents of D's body if present.
+  ///
+  ///\returns true on success.
+  bool removeDecl(const clang::Decl *D, bool IsRecursive = true);
 
   bool replaceNamedDeclName(const clang::NamedDecl *ND,
                             const std::string &NameStr);

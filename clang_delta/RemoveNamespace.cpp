@@ -1002,7 +1002,7 @@ bool RemoveNamespace::handleOneNamespaceDecl(NamespaceDecl *ND)
 
 void RemoveNamespace::removeNamespace(const NamespaceDecl *ND)
 {
-   RewriteHelper->removeDecl(ND);
+  RewriteHelper->removeDecl(ND, /*IsRecursive=*/false);
 }
 
 bool RemoveNamespace::getNewNameFromNameMap(const NamedDecl *ND,

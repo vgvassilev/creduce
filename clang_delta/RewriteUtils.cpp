@@ -1458,32 +1458,56 @@ bool RewriteUtils::removeFieldDecl(const FieldDecl *FD)
   return !(TheRewriter->RemoveText(SourceRange(StartLoc, EndLoc)));
 }
 
-bool RewriteUtils::removeDecl(const Decl *D)
+static SourceLocation getRBraceLoc(const Decl *D) {
+  if (const TagDecl *TD = dyn_cast<TagDecl>(D))
+    return TD->getRBraceLoc();
+
+  if (const NamespaceDecl *NSD = dyn_cast<NamespaceDecl>(D))
+    return NSD->getRBraceLoc();
+
+  if (D->hasBody())
+    return D->getBodyRBrace();
+
+  return SourceLocation();
+}
+
+bool RewriteUtils::removeDecl(const Decl *D, bool IsRecursive /* = true */)
 {
-  SourceRange Range
-     = TheRewriter->getSourceMgr().getExpansionRange(D->getSourceRange());
+  SourceManager &SM = TheRewriter->getSourceMgr();
+  SourceRange Range = SM.getExpansionRange(D->getSourceRange());
 
   TransAssert(TheRewriter->getRangeSize(Range) != -1
               && "Bad SourceRange!");
 
   SourceLocation StartLoc = Range.getBegin();
   SourceLocation EndLoc = Range.getEnd();
-  if (D->hasBody())
-    EndLoc = D->getBodyRBrace();
-  if (const TagDecl *TD = dyn_cast<TagDecl>(D))
-    EndLoc = TD->getRBraceLoc();
+
+  // Expand possible macro source locations.
+  if (SM.getExpansionLoc(getRBraceLoc(D)).isValid())
+    EndLoc = SM.getExpansionLoc(getRBraceLoc(D));
 
   // Check for a ; after the declaration.
   Token Tok;
   const ASTContext &C = D->getASTContext();
-  const SourceManager &SM = C.getSourceManager();
   SourceLocation TokStartLoc = EndLoc.getLocWithOffset(1);
   bool success = !Lexer::getRawToken(TokStartLoc, Tok, SM, C.getLangOpts(),
                                      /*IgnoreWhiteSpace*/true);
   if (success && (Tok.is(tok::semi) || Tok.is(tok::comma)))
      EndLoc = Tok.getEndLoc();
 
-  return !(TheRewriter->RemoveText(SourceRange(StartLoc, EndLoc)));
+  SourceRange ReplacementRange(StartLoc, EndLoc);
+  if (IsRecursive) {
+    return !TheRewriter->RemoveText(ReplacementRange);
+  }
+  const DeclContext *DC = cast<DeclContext>(D);
+
+  if (!DC->decls_empty()) {
+    SourceRange ExcludeRange(DC->decls_begin()->getLocStart(), EndLoc);
+    return !TheRewriter->ReplaceText(ReplacementRange, ExcludeRange) &&
+      // EndLoc.getWithOffset(-1) is not a good idea. Just balance the braces {}.
+      !TheRewriter->InsertTextBefore(EndLoc, "{");
+  }
+  return !TheRewriter->RemoveText(ReplacementRange);
 }
 
 bool RewriteUtils::replaceCXXDtorCallExpr(const CXXMemberCallExpr *CE,
