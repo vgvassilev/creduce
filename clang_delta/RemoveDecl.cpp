@@ -60,17 +60,22 @@ static bool containsDecl(Decl* oldD, Decl* newD, const SourceManager& SM) {
   // };
   SourceRange newR = newD->getSourceRange();
   SourceRange oldR = oldD->getSourceRange();
-  if (SM.isBeforeInSLocAddrSpace(oldR.getBegin(), newR.getBegin()) &&
-      SM.isBeforeInSLocAddrSpace(newR.getEnd(), oldR.getEnd()))
+  SourceLocation oldB = oldR.getBegin();
+  SourceLocation oldE = oldR.getEnd();
+  SourceLocation newB = newR.getBegin();
+  SourceLocation newE = newR.getEnd();
+
+  if ((SM.isBeforeInSLocAddrSpace(oldB, newB) || oldB == newB) &&
+      (SM.isBeforeInSLocAddrSpace(newE, oldE) || newE == oldE))
     // already in the range
     return true;
 #ifndef NDEBUG
   // In cases where the one sloc is in the old decl and the other is not.
-  if (SM.isBeforeInSLocAddrSpace(oldR.getBegin(), newR.getBegin()))
-    TransAssert(SM.isBeforeInSLocAddrSpace(oldR.getEnd(), newR.getEnd())
+  if (SM.isBeforeInSLocAddrSpace(oldB, newB))
+    TransAssert(SM.isBeforeInSLocAddrSpace(oldE, newE)
                 && "Partial source range.");
-  if (SM.isBeforeInSLocAddrSpace(newR.getEnd(), oldR.getEnd()))
-    TransAssert(SM.isBeforeInSLocAddrSpace(newR.getBegin(), oldR.getBegin())
+  if (SM.isBeforeInSLocAddrSpace(newE, oldE))
+    TransAssert(SM.isBeforeInSLocAddrSpace(newB, oldB)
                 && "Partial source range.");
 #endif //NDEBUG
   return false;
