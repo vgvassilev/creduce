@@ -12,12 +12,17 @@
 #  include <config.h>
 #endif
 
-#include <string>
-#include <sstream>
-#include <cstdlib>
-
-#include "llvm/Support/raw_ostream.h"
 #include "TransformationManager.h"
+
+#include "llvm/Support/ManagedStatic.h" // for llvm::llvm_shutdown_obj.
+#include "llvm/Support/PrettyStackTrace.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/Signals.h"
+
+#include <cstdlib>
+#include <sstream>
+#include <string>
+
 
 TransformationManager *TransMgr = 0;
 static int ErrorCode = -1;
@@ -191,6 +196,11 @@ static void HandleOneArg(const char *Arg,
 
 int main(int argc, char **argv)
 {
+  llvm::llvm_shutdown_obj shutdownTrigger;
+
+  llvm::sys::PrintStackTraceOnErrorSignal();
+  llvm::PrettyStackTraceProgram X(argc, argv);
+
   TransMgr = TransformationManager::getTransformationManager();
 
   ClangDeltaInvocationOptions Opts;
@@ -203,7 +213,7 @@ int main(int argc, char **argv)
     // fail to do transformation
     Die(ErrorMsg);
   }
-
+  llvm::llvm_shutdown();
   return 0;
 }
 
