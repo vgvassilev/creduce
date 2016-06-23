@@ -196,10 +196,9 @@ static void HandleOneArg(const char *Arg,
 
 int main(int argc, char **argv)
 {
-  llvm::llvm_shutdown_obj shutdownTrigger;
-
-  llvm::sys::PrintStackTraceOnErrorSignal();
+  llvm::sys::PrintStackTraceOnErrorSignal(argv[0]);
   llvm::PrettyStackTraceProgram X(argc, argv);
+  llvm::llvm_shutdown_obj shutdownTrigger;
 
   TransMgr = TransformationManager::getTransformationManager();
 
