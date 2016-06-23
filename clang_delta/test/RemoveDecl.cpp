@@ -1,5 +1,5 @@
 //RUN: %clang_cc1 -fsyntax-only -std=c++14  %s
-//RUN: %clangdelta --transformation=remove-decl --counter=1 --to-counter=1 %s 2>&1 | FileCheck -check-prefix=CHECK-DIAG %s
+//RUN: not %clangdelta --transformation=remove-decl --counter=1 --to-counter=1 %s 2>&1 | FileCheck -check-prefix=CHECK-DIAG %s
 //RUN: %clangdelta --transformation=remove-decl --counter=18 %s 2>&1 | FileCheck %s
 //RUN: %clangdelta --transformation=remove-decl --counter=1 --to-counter=2 %s 2>&1 | FileCheck  -check-prefix=CHECK-MULTI %s
 //RUN: %clangdelta --transformation=remove-decl --counter=2 --to-counter=4 %s 2>&1 | FileCheck  -check-prefix=CHECK-MULTI-A %s
