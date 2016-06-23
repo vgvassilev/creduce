@@ -1489,7 +1489,8 @@ bool RewriteUtils::removeDecl(const Decl *D, bool IsRecursive /* = true */)
   // Check for a ; after the declaration.
   Token Tok;
   const ASTContext &C = D->getASTContext();
-  SourceLocation TokStartLoc = EndLoc.getLocWithOffset(1);
+  SourceLocation TokStartLoc = Lexer::getLocForEndOfToken(EndLoc, /*Offset=*/0,
+                                                          SM, C.getLangOpts());
   bool success = !Lexer::getRawToken(TokStartLoc, Tok, SM, C.getLangOpts(),
                                      /*IgnoreWhiteSpace*/true);
   if (success && (Tok.is(tok::semi) || Tok.is(tok::comma)))
