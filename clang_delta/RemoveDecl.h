@@ -14,44 +14,55 @@
 #include "Transformation.h"
 
 #include "clang/AST/Decl.h"
+#include "clang/AST/RecursiveASTVisitor.h"
 
-#include <set>
+#include "llvm/ADT/SetVector.h"
+
 #include <vector>
 
 namespace clang {
   class ASTContext;
   class Decl;
+  class DeclContext;
   class SourceManager;
 }
 
-class RemoveDecl : public Transformation {
+class RemoveDecl : public Transformation,
+                   public clang::RecursiveASTVisitor<RemoveDecl> {
 private:
-  std::vector<clang::Decl *> Decls;
-  std::set<clang::Decl *> DeclsLookup;
-  virtual void Initialize(clang::ASTContext &context) override;
-  virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override;
-  bool isAlreadyInSourceRange(clang::Decl* newD) const;
+  llvm::SetVector<clang::Decl *> Decls;
+  std::vector<clang::Decl *> RemovedDecls;
+
+  bool isInSourceRangeOfAlreadyRemovedDecl(clang::Decl* newD) const;
   void checkAndReplaceIfDeclEnclosesAnyExistingDecl(clang::Decl* val);
-  void removeDecl(clang::Decl *val) {
-    auto it = find (Decls.begin(), Decls.end(), val);
-    assert(it != Decls.end() && "Cannot find what to remove.");
-    Decls.erase(it);
-    DeclsLookup.erase(DeclsLookup.find(val));
-    --ValidInstanceNum;
+  void removeDecl(clang::Decl *D) {
+    TransAssert(!isInSourceRangeOfAlreadyRemovedDecl(D)
+                && "Deleted by previous operation!");
+    bool success = Decls.remove(D);
+    TransAssert(success && "Cannot find what to remove.");
+    success = RewriteHelper->removeDecl(D);
+    TransAssert(success && "Cannot find remove decl.");
+    RemovedDecls.push_back(D);
   }
 
 public:
+  RemoveDecl(const char *TransName, const char *Desc)
+    : Transformation(TransName, Desc, /*MultipleRewrites*/true)
+  { }
   void maybeAddDecl(clang::Decl *val) {
-    if (!DeclsLookup.count(val) && !isAlreadyInSourceRange(val)) {
-      checkAndReplaceIfDeclEnclosesAnyExistingDecl(val);
-      DeclsLookup.insert(val);
-      Decls.push_back(val);
+    if (!Decls.count(val)) {
+      Decls.insert(val);
       ++ValidInstanceNum;
     }
   }
 
-  RemoveDecl(const char *TransName, const char *Desc)
-    : Transformation(TransName, Desc, /*MultipleRewrites*/true)
-  { }
+  // Transformation
+  virtual void Initialize(clang::ASTContext &context) override;
+  virtual void HandleTranslationUnit(clang::ASTContext &Ctx) override;
+
+  //RecursiveASTVisitor
+  bool VisitDecl(clang::Decl *D);
+  bool VisitDeclContext(clang::DeclContext *DC);
+
 };
 #endif // REMOVE_DECL_H

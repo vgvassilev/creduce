@@ -13,7 +13,6 @@
 #include "TransformationManager.h"
 
 #include "clang/AST/ASTContext.h"
-#include "clang/AST/RecursiveASTVisitor.h"
 
 using namespace clang;
 
@@ -21,36 +20,6 @@ static const char *DescriptionMsg =
 "Remove a decl from a decl context, such as namespace, class, etc. \n";
 
 static RegisterTransformation<RemoveDecl> Trans("remove-decl", DescriptionMsg);
-class RemoveDeclVisitor : public RecursiveASTVisitor<RemoveDeclVisitor> {
-
-private:
-  RemoveDecl *ConsumerInstance;
-
-public:
-  RemoveDeclVisitor(RemoveDecl *Instance) : ConsumerInstance(Instance) { }
-
-  bool VisitDecl(Decl *D) {
-    if (ConsumerInstance->isInIncludedFile(D))
-      return true;
-    if (auto *DC = dyn_cast<DeclContext>(D))
-      return VisitDeclContext(DC);
-
-    if (D->isImplicit() || !D->getSourceRange().isValid())
-      return true;
-
-    ConsumerInstance->maybeAddDecl(D);
-    return true;
-  }
-
-  bool VisitDeclContext(DeclContext *DC) {
-    // Go in depth.
-    for (auto *D : DC->decls()) {
-      TraverseDecl(D);
-    }
-
-    return true;
-  }
-};
 
 ///Returns true if oldD contains newD.
 static bool containsDecl(Decl* oldD, Decl* newD, const SourceManager& SM) {
@@ -81,12 +50,12 @@ static bool containsDecl(Decl* oldD, Decl* newD, const SourceManager& SM) {
   return false;
 }
 
-bool RemoveDecl::isAlreadyInSourceRange(Decl* newD) const {
+bool RemoveDecl::isInSourceRangeOfAlreadyRemovedDecl(Decl* newD) const {
   // Handle cases like:
   // void f(int param);
   // We will have one time f and param. In that case f might get removed before
   // param causing an assert.
-  for (auto* D : Decls)
+  for (auto* D : RemovedDecls)
     if (containsDecl(D, newD, *SrcManager))
       return true;
   return false;
@@ -101,6 +70,28 @@ void RemoveDecl::checkAndReplaceIfDeclEnclosesAnyExistingDecl(Decl* newD) {
   }
 }
 
+bool RemoveDecl::VisitDecl(Decl *D) {
+  if (isInIncludedFile(D))
+    return true;
+
+  if (D->isImplicit() || !D->getSourceRange().isValid())
+    return true;
+
+  maybeAddDecl(D);
+  if (auto *DC = dyn_cast<DeclContext>(D))
+    return VisitDeclContext(DC);
+  return true;
+}
+
+bool RemoveDecl::VisitDeclContext(DeclContext *DC) {
+  // Go in depth.
+  for (auto *D : DC->decls()) {
+    TraverseDecl(D);
+  }
+
+  return true;
+}
+
 void RemoveDecl::Initialize(ASTContext &context)
 {
   Transformation::Initialize(context);
@@ -108,8 +99,7 @@ void RemoveDecl::Initialize(ASTContext &context)
 
 void RemoveDecl::HandleTranslationUnit(ASTContext &Ctx)
 {
-  auto CollectionVisitor = RemoveDeclVisitor(this);
-  CollectionVisitor.TraverseDecl(Ctx.getTranslationUnitDecl());
+  TraverseDecl(Ctx.getTranslationUnitDecl());
 
   if (QueryInstanceOnly)
     return;
@@ -131,7 +121,7 @@ void RemoveDecl::HandleTranslationUnit(ASTContext &Ctx)
   if (ToCounter < TransformationCounter) {
     // Removing the last decl in the TU gives more chances to success.
     D = Decls[Decls.size() - TransformationCounter];
-    RewriteHelper->removeDecl(D);
+    removeDecl(D);
     //std::string s;
     //auto R = D->getSourceRange();
     //RewriteHelper->getStringBetweenLocs(s, R.getBegin(), R.getEnd());
@@ -140,7 +130,8 @@ void RemoveDecl::HandleTranslationUnit(ASTContext &Ctx)
     // ... --to-counter=2 --counter=1
     for (int i = ToCounter - 1; i >= TransformationCounter; --i) {
       D = Decls[i-1];
-      RewriteHelper->removeDecl(D);
+      if (!isInSourceRangeOfAlreadyRemovedDecl(D))
+        removeDecl(D);
     }
   }
 
