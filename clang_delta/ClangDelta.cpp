@@ -200,6 +200,14 @@ int main(int argc, char **argv)
   llvm::PrettyStackTraceProgram X(argc, argv);
   llvm::llvm_shutdown_obj shutdownTrigger;
 
+  std::string ErrorMsg;
+  if (argc == 1) {
+    ErrorMsg = "Error: Missing argument. \n\nTry ";
+    ErrorMsg += argv[0];
+    ErrorMsg += " --help";
+    Die(ErrorMsg);
+  }
+
   TransMgr = TransformationManager::getTransformationManager();
 
   ClangDeltaInvocationOptions Opts;
@@ -207,7 +215,6 @@ int main(int argc, char **argv)
     HandleOneArg(argv[i], Opts);
   }
 
-  std::string ErrorMsg;
   if (!TransMgr->doTransformation(Opts, ErrorMsg, ErrorCode)) {
     // fail to do transformation
     Die(ErrorMsg);
