@@ -980,10 +980,11 @@ void RemoveNamespace::addNamedDeclsFromNamespace(const NamespaceDecl *ND)
 
 bool RemoveNamespace::handleOneNamespaceDecl(NamespaceDecl *ND)
 {
-  if (isInIncludedFile(ND))
+  NamespaceDecl *CanonicalND = ND->getCanonicalDecl();
+
+  if (isInIncludedFile(ND) || isInIncludedFile(CanonicalND))
     return true;
 
-  NamespaceDecl *CanonicalND = ND->getCanonicalDecl();
   if (VisitedND.count(CanonicalND)) {
     if (TheNamespaceDecl == CanonicalND) {
       addNamedDeclsFromNamespace(ND);
