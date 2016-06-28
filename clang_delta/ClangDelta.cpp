@@ -89,7 +89,7 @@ static void DieOnBadCmdArg(const std::string &ArgStr)
   llvm::outs() << "Error: Bad command line option `" << ArgStr << "`\n";
   llvm::outs() << "\n";
   PrintHelpMessage();
-  exit(-1);
+  exit(ErrorCode);
 }
 
 static void Die(const std::string &Message)
