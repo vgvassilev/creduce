@@ -18,4 +18,10 @@ namespace dependent_template_types {
   template <typename T, template<typename X> class Allocator>
   class zero_allocator : public Allocator<T> {};
 }
+
+namespace atomic_types {
+  // Make sure we don't crash on _Atomic types.
+  typedef _Atomic( int ) atomic_int_least32_t;
+  void atomic_increment( atomic_int_least32_t * use ) { (void)use; }
+}
 //expected-no-diagnostics

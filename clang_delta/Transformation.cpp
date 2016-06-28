@@ -799,6 +799,7 @@ const CXXRecordDecl *Transformation::getBaseDeclFromType(const Type *Ty)
   case Type::SubstTemplateTypeParmPack:
   case Type::PackExpansion:
   case Type::Complex:
+  case Type::Atomic:
   case Type::Builtin: // fall-through
     return NULL;
 
