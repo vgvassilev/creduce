@@ -1,6 +1,7 @@
-//RUN: %clangdelta --transformation=simplify-body --counter=1 %s 2>&1 | FileCheck %s
-//RUN: %clangdelta --transformation=simplify-body --counter=1 --to-counter=2 %s 2>&1 | FileCheck %s
-//RUN: %clangdelta --transformation=simplify-body --counter=1 --to-counter=4 %s 2>&1 | FileCheck  -check-prefix=CHECK-MULTI %s
+//RUN: %clang_cc1 -fsyntax-only -fcxx-exceptions %s
+//RUN: %clangdelta --transformation=simplify-body --counter=1 %s 2>&1 | FileCheck %s | %clang_cc1 -fsyntax-only -xc++ -
+//RUN: %clangdelta --transformation=simplify-body --counter=1 --to-counter=2 %s 2>&1 | FileCheck %s | %clang_cc1 -fsyntax-only -xc++ -
+//RUN: %clangdelta --transformation=simplify-body --counter=1 --to-counter=5 %s 2>&1 | FileCheck  -check-prefix=CHECK-MULTI %s | %clang_cc1 -fsyntax-only -xc++ -
 //RUN: %clangdelta --query-instances=simplify-body %s 2>&1 | FileCheck -check-prefix=CHECK-QI %s
 
 void f() {
@@ -38,17 +39,15 @@ struct S {
   // CHECK-MULTI: S i() {return S();}
 };
 
-// This is broken source code but it might happen if CREDUCE_INCLUDE_PATH is not
-// properly set.
-class FwdDeclS;
-FwdDeclS& should_ignore() {
-  S s;
-  return reinterpret_cast<FwdDeclS&>(s);
-}
+int CXXTryStmtAsBody ()
+  try {
+    int i = 10;
+    return i;
+  }
+  catch(...) {
+    return 0;
+  }
+//CHECK-MULTI:int CXXTryStmtAsBody ()
+//CHECK-MULTI-NEXT: {return 0;}
 
-FwdDeclS& FwdDeclsFactory();
-
-FwdDeclS should_ignore1() { return FwdDeclsFactory(); }
-// End broken code.
-
-//CHECK-QI: Available transformation instances: 4
+//CHECK-QI: Available transformation instances: 5

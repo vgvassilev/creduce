@@ -74,8 +74,9 @@ public:
       return true;
     if (!isSupportedReturnType(D->getReturnType()))
       return true;
-    if (cast<CompoundStmt>(D->getBody())->body_empty())
-      return true;
+    if (CompoundStmt* CS = dyn_cast<CompoundStmt>(D->getBody()))
+      if (CS->body_empty())
+        return true;
 
     ConsumerInstance->addDecl(D);
     return true;
@@ -99,9 +100,14 @@ static void simplifyFunctionBody(FunctionDecl* FD, Rewriter& RW) {
   TransAssert(FD);
   TransAssert(FD->hasBody() &&
               "Trying to work with a declaration not a definition");
-  CompoundStmt* Body = cast<CompoundStmt>(FD->getBody());
-  SourceLocation LBracLoc = Body->getLBracLoc();
-  SourceLocation RBracLoc = Body->getRBracLoc();
+
+  SourceLocation LBracLoc = FD->getBody()->getLocStart();
+  SourceLocation RBracLoc = FD->getBody()->getLocEnd();
+  if (CompoundStmt* CS = dyn_cast<CompoundStmt>(FD->getBody())) {
+    LBracLoc = CS->getLBracLoc();
+    RBracLoc = CS->getRBracLoc();
+  }
+
   SourceRange Range
     = RW.getSourceMgr().getExpansionRange(SourceRange(LBracLoc, RBracLoc));
   TransAssert (RW.getRangeSize(Range) != -1 && "Bad range!");
