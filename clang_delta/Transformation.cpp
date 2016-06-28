@@ -1075,7 +1075,8 @@ bool Transformation::isInIncludedFile(SourceLocation Loc) const
 
 bool Transformation::isInIncludedFile(const Decl *D) const
 {
-  return isInIncludedFile(D->getLocation());
+  // Expand potential macros.
+  return isInIncludedFile(SrcManager->getExpansionLoc(D->getLocation()));
 }
 
 bool Transformation::isInIncludedFile(const Stmt *S) const
