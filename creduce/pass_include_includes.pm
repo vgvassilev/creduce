@@ -17,7 +17,7 @@ use File::Copy;
 use File::Spec;
 use creduce_utils;
 
-my $MAX_INC_SIZE = 300;
+my $MAX_INC_SIZE = 1000;
 
 sub check_prereqs () {
     return 1;
