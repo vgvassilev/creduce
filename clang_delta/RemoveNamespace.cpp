@@ -985,6 +985,10 @@ bool RemoveNamespace::handleOneNamespaceDecl(NamespaceDecl *ND)
   if (isInIncludedFile(ND) || isInIncludedFile(CanonicalND))
     return true;
 
+  // We got a broken AST.
+  if (ND->getSourceRange().isInvalid())
+    return true;
+
   if (VisitedND.count(CanonicalND)) {
     if (TheNamespaceDecl == CanonicalND) {
       addNamedDeclsFromNamespace(ND);
