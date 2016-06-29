@@ -1061,6 +1061,12 @@ while (@ARGV) {
         push @toreduce, $f;
     }
 
+    # @attached contains files that need to be only copied. We should remove all
+    # files from @toreduce which are in @attached
+    my %hash1 = map{$_ =>1} @attached;
+    my @diff = grep(!defined $hash1{$_}, @toreduce);
+    @toreduce = @diff;
+
     foreach my $f (@toreduce) {
         check_file_attributes("file", $f, "efrw");
     }
