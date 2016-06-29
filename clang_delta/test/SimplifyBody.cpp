@@ -50,4 +50,12 @@ int CXXTryStmtAsBody ()
 //CHECK-MULTI:int CXXTryStmtAsBody ()
 //CHECK-MULTI-NEXT: {return 0;}
 
+namespace no_repeat {
+  // We must ignore these, since they come from simplify-body. I.e. they should
+  // not be considered as viable candidates by clang_delta --query-instances.
+  bool f() {return 0;}
+  struct S {};
+  S& return_S() {static S __CREDUCE_AUTO_GENERATED__; return __CREDUCE_AUTO_GENERATED__;}
+}
+
 //CHECK-QI: Available transformation instances: 5

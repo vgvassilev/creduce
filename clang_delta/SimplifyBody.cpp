@@ -57,6 +57,8 @@ static bool isSupportedReturnType(QualType returnTy) {
     || returnTy->isStructureType();
 }
 
+static const char* automaticVarName = "__CREDUCE_AUTO_GENERATED__";
+
 class SimplifyBodyVisitor : public RecursiveASTVisitor<SimplifyBodyVisitor> {
 
 private:
@@ -74,9 +76,18 @@ public:
       return true;
     if (!isSupportedReturnType(D->getReturnType()))
       return true;
-    if (CompoundStmt* CS = dyn_cast<CompoundStmt>(D->getBody()))
-      if (CS->body_empty())
+    if (CompoundStmt* CS = dyn_cast<CompoundStmt>(D->getBody())) {
+      // Avoid already simplified declarations. Eg.
+      // void f() {}
+      // bool f() {return 0;}
+      // S& f() {static S __auto_gen__; return __auto_gen__;}
+      if (CS->size() <= 1)
         return true;
+      if (ReturnStmt* RS = dyn_cast<ReturnStmt>(CS->body_back()))
+        if (DeclRefExpr* DRE = dyn_cast<DeclRefExpr>(RS->getRetValue()))
+          if (DRE->getDecl()->getName().equals(automaticVarName))
+            return true;
+    }
 
     ConsumerInstance->addDecl(D);
     return true;
@@ -128,7 +139,10 @@ static void simplifyFunctionBody(FunctionDecl* FD, Rewriter& RW) {
     // return type is something & and we need to create static something;
     std::string ctorExpr
       = QualType::getAsString(returnType->getPointeeType().split().Ty, Qualifiers());
-    RW.ReplaceText(Range, "{static " + ctorExpr + " s; return s;}");
+    // "{static " + ctorExpr + " __auto_gen__; return __auto_gen__;}"
+    std::string replacement = "{static " + ctorExpr + " "
+      + automaticVarName + "; return " + automaticVarName + ";}";
+    RW.ReplaceText(Range, replacement);
     return;
   }
   // Case 4.
