@@ -571,6 +571,8 @@ EOT
 	foreach my $s (@l) {
 	    print OF "$s\n";
 	}
+        # Print out all env vars.
+        print OF "\n $_=" , $ENV{"$_"} foreach (keys %ENV);
 	print OF "$MSG";
 	close OF;
 	print $MSG;
