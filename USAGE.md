@@ -5,10 +5,7 @@
 <a name="MultiFileReductions"></a>
 ### Multiple files reductions
 
-Currently it requires several steps. For instance, we want to reduce the
-dependencies of `std::basic_string<char>`.
-
-0. Use ramdisk when working with many files
+Use ramdisk when working with many files.
 
   - Ubuntu
      ```
@@ -17,6 +14,10 @@ dependencies of `std::basic_string<char>`.
      creduce --tempdir /media/ramdisk1/ ...
 
      ```
+
+
+Currently it requires several steps. For instance, we want to reduce the
+dependencies of `std::basic_string<char>`.
 
 1. T.cpp
 
