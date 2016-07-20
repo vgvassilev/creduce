@@ -8,6 +8,16 @@
 Currently it requires several steps. For instance, we want to reduce the
 dependencies of `std::basic_string<char>`.
 
+0. Use ramdisk when working with many files
+
+  - Ubuntu
+     ```
+     sudo mkdir -p /media/ramdisk1
+     sudo mount -t tmpfs -o size=256M tmpfs /media/ramdisk1/
+     creduce --tempdir /media/ramdisk1/ ...
+
+     ```
+
 1. T.cpp
 
 ```bash

@@ -70,6 +70,7 @@ my $NOKILL = 0;
 my $NOSETPGRP = 0;
 my $MAX_WIN;
 my $SINGLE_LOOP;
+my $TEMP_DIR = File::Spec->tmpdir;
 
 my @options = (
     ["--n",                   "integer", 1, \$NPROCS,          "Number of cores to use; C-Reduce tries to automatically pick a good setting but its choice may be too low or high for your situation", "<N>"],
@@ -95,6 +96,7 @@ my @options = (
     ["--skip-key-off",        "const",   1, \$SKIP_KEY_OFF,    "Disable skipping the rest of the current pass when \"s\" is pressed"],
     ["--max-improvement",     "integer", 1, \$MAX_WIN,         "Largest improvement in file size from a single transformation that C-Reduce should accept (useful only to slow C-Reduce down)", "<bytes>"],
     ["--attach",              "call",    1, \&add_attached,    "Comma separated list of files to be copied together with the reduced files, but not reduced on its own"],
+    ["--tempdir",             "string",  1, \$TEMP_DIR,        "A temporary folder, used to copy files for reduction. Could be a ramdisk"],
 );
 
 @options = sort { return @{$a}[0] cmp @{$b}[0]; } @options;
@@ -259,7 +261,7 @@ my @tmpdirs;
 sub make_tmpdir () {
     my $dir = File::Temp::tempdir("creduce-XXXXXX", 
 				  $SAVE_TEMPS ? (CLEANUP => 0) : (CLEANUP => 1), 
-				  DIR => File::Spec->tmpdir);
+				  DIR => $TEMP_DIR);
     push @tmpdirs, $dir;
     return $dir;
 }
