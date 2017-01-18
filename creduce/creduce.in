@@ -269,6 +269,7 @@ sub make_tmpdir () {
 sub remove_tmpdirs () {
     return if $SAVE_TEMPS;
     while (my $dir = shift(@tmpdirs)) {
+	print "Removing ${dir}\n" if !$SAVE_TEMPS && $DEBUG_SMP;
 	File::Path::remove_tree ($dir, {verbose => 0, safe => 0, error => \my $err});
     }
 }
@@ -430,6 +431,7 @@ sub killem() {
 	    my $kidref = shift @variants;
 	    die unless (scalar(@{$kidref})==5);
 	    (my $pid, my $newsh, my $tmpdir, my $tmpfn, my $result) = @{$kidref};
+	    print "Removing ${tmpdir}\n" if !$SAVE_TEMPS && $DEBUG_SMP;
 	    File::Path::remove_tree ($tmpdir, {verbose => 0, safe => 0, error => \my $err})
 		unless $SAVE_TEMPS;
         }
@@ -445,6 +447,7 @@ sub killem() {
 		waitpid ($pid, 0);
 		$num_running--;
 	    }
+	    print "Removing ${tmpdir}\n" if !$SAVE_TEMPS && $DEBUG_SMP;
 	    File::Path::remove_tree ($tmpdir, {verbose => 0, safe => 0, error => \my $err})
 		unless $SAVE_TEMPS;
         }
@@ -480,7 +483,7 @@ sub fork_helper($) {
             my $res = delta_test();
 	    print "delta_test() returned $res\n" if $DEBUG;
             my $exitcode = $res ? 0 : 1;
-	    print "forked child exiting with $exitcode (1 == uninteresting, 0 == interesting)\n" if $DEBUG_SMP;
+	    print "[$$] forked child exiting with $exitcode (1 == uninteresting, 0 == interesting)\n" if $DEBUG_SMP;
 	    exit($exitcode);
         }
         return $pid;
@@ -682,7 +685,7 @@ sub delta_pass ($) {
 	    my $xpid = wait_helper();
 	    # UNIX 0/1 back to Perl T/F
 	    my $delta_result = (($? >> 8) == 0) ? 1 : 0;
-	    print "child $xpid had delta_result ${delta_result} (0 == uninteresting, 1 == interesting)\n"
+	    print "  child $xpid had delta_result ${delta_result} (0 == uninteresting, 1 == interesting)\n"
 		if $DEBUG_SMP;
 	    $num_running--;
 	    my $found = 0;
