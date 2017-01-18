@@ -53,6 +53,7 @@ clang -Xclang -header-include-file -Xclang included_files.txt -fsyntax-only T.cp
 or using the script `localize_headers`.
 
 3. Copy the system headers locally.
+cat ../strace.txt  | grep 'open(' | grep -v "No such file or directory" | grep -v ' open("/dev/' | sed 's,[0-9]* \(open("\)\(.*\)".*,\2,' | xargs -I$  python -c "import os,sys; print os.path.abspath(sys.argv[1])" $ | xargs -I$ rsync -R -L $ includes/
 ```bash
 cat included_files.txt | xargs -I$  python -c "import os,sys; print os.path.abspath(sys.argv[1])" $ | xargs -I$ rsync -R -L $ includes/
 ```
