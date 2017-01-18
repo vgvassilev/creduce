@@ -207,17 +207,17 @@ void RemoveBaseClass::copyBaseClassDecls(void)
 {
   if (!getNumExplicitDecls(TheBaseClass))
     return;
-  SourceLocation StartLoc = 
-    RewriteHelper->getLocationAfter(TheBaseClass->getLocation(), '{');
-  SourceLocation EndLoc = TheBaseClass->getRBraceLoc();
-  TransAssert(EndLoc.isValid() && "Invalid RBraceLoc!");
-  EndLoc = EndLoc.getLocWithOffset(-1);
+  SourceRange BracRange = TheBaseClass->getBraceRange();
+  TransAssert(BracRange.isValid() && "Invalid RBraceLoc!");
+
+  SourceLocation StartLoc = BracRange.getBegin();
+  SourceLocation EndLoc = BracRange.getEnd().getLocWithOffset(-1);
 
   std::string DeclsStr = 
     TheRewriter.getRewrittenText(SourceRange(StartLoc, EndLoc));
 
   TransAssert(!DeclsStr.empty() && "Empty DeclsStr!");
-  SourceLocation InsertLoc = TheDerivedClass->getRBraceLoc();
+  SourceLocation InsertLoc = TheDerivedClass->getBraceRange().getEnd();
   TheRewriter.InsertTextBefore(InsertLoc, DeclsStr);
 }
 

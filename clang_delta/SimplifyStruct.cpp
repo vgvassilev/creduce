@@ -171,10 +171,10 @@ bool SimplifyStructRewriteVisitor::VisitRecordDecl(RecordDecl *RD)
   if (!RD->isThisDeclarationADefinition())
     return true;
 
-  SourceLocation LBLoc =
-    ConsumerInstance->RewriteHelper->getLocationUntil(RD->getLocation(), '{');
-  SourceLocation RBLoc = RD->getRBraceLoc();
-  ConsumerInstance->TheRewriter.RemoveText(SourceRange(LBLoc, RBLoc));
+  SourceRange BracRange = RD->getBraceRange();
+  TransAssert(BracRange.isValid() && "Invalid brace range!");
+
+  ConsumerInstance->TheRewriter.RemoveText(BracRange);
   return true;
 }
 

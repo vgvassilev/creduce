@@ -54,6 +54,7 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
 
   std::vector<const char*> Args;
 
+  PreprocessorOptions &PPOpts = ClangInstance->getPreprocessorOpts();
   TargetOptions &TargetOpts = ClangInstance->getTargetOpts();
   if (const char *env = getenv("CREDUCE_TARGET_TRIPLE"))
     TargetOpts.Triple = std::string(env);
@@ -62,7 +63,7 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
   llvm::Triple T(TargetOpts.Triple);
 
   if ((IK == IK_C) || (IK == IK_PreprocessedC)) {
-    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_C, T);
+    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_C, T, PPOpts);
   }
   else if ((IK == IK_CXX) || (IK == IK_PreprocessedCXX)) {
     // ISSUE: it might cause some problems when building AST
@@ -71,7 +72,7 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
 
     Args.push_back("-x");
     Args.push_back("c++");
-    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_CXX, T);
+    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_CXX, T, PPOpts);
   }
   else if(IK == IK_OpenCL) {
     //Commandline parameters
@@ -93,7 +94,8 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
     Args.push_back("clc/clc.h");
     Args.push_back("-fno-builtin");
 
-    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_OpenCL, T);
+    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_OpenCL, T,
+                               PPOpts);
   }
   else {
     ErrorMsg = "Unsupported file type!";

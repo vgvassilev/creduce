@@ -140,12 +140,10 @@ void SimplifyNestedClass::removeOuterClass()
   LocEnd = LocEnd.getLocWithOffset(-1);
   TheRewriter.RemoveText(SourceRange(LocStart, LocEnd));
 
-  LocStart = TheBaseCXXRD->getRBraceLoc();
-  LocEnd = RewriteHelper->getLocationUntil(LocStart, ';');
-  if (LocStart.isInvalid() || LocEnd.isInvalid())
-    return;
+  SourceRange BracRange = TheBaseCXXRD->getBraceRange();
+  TransAssert(BracRange.isValid() && "Invalid brace range!");
 
-  TheRewriter.RemoveText(SourceRange(LocStart, LocEnd));
+  TheRewriter.RemoveText(BracRange);
 }
 
 void SimplifyNestedClass::handleOneCXXRecordDecl(const CXXRecordDecl *CXXRD)

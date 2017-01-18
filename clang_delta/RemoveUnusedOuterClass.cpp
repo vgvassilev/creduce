@@ -139,13 +139,11 @@ void RemoveUnusedOuterClass::removeOuterClass()
       continue;
     TheRewriter.RemoveText(AS->getSourceRange());
   }
-  
-  LocStart = TheCXXRDDef->getRBraceLoc();
-  LocEnd = RewriteHelper->getLocationUntil(LocStart, ';');
-  if (LocStart.isInvalid() || LocEnd.isInvalid())
-    return;
 
-  TheRewriter.RemoveText(SourceRange(LocStart, LocEnd));
+  SourceRange BracRange = TheCXXRDDef->getBraceRange();
+  TransAssert(BracRange.isValid() && "Invalid brace range!");
+
+  TheRewriter.RemoveText(BracRange);
 }
 
 RemoveUnusedOuterClass::~RemoveUnusedOuterClass(void)

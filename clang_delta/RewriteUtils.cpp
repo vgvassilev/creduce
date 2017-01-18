@@ -1460,7 +1460,7 @@ bool RewriteUtils::removeFieldDecl(const FieldDecl *FD)
 
 static SourceLocation getRBraceLoc(const Decl *D) {
   if (const TagDecl *TD = dyn_cast<TagDecl>(D))
-    return TD->getRBraceLoc();
+    return TD->getBraceRange().getEnd();
 
   if (const NamespaceDecl *NSD = dyn_cast<NamespaceDecl>(D))
     return NSD->getRBraceLoc();
