@@ -707,12 +707,14 @@ sub delta_pass ($) {
 
 	# starting at the front of the list, peel off all variants that
 	# aren't backed up by a running subprocess
-	while (scalar (@variants) > 0) {
-	    (my $pid,my $newsh,my $tmpdir,my $variant,my $delta_result) = @{$variants[0]};
-	    last unless ($pid == -1);
-	    my $trash = shift @variants;
-	    if ($delta_result &&
-		(!defined $MAX_WIN || ((-s $fn) - (-s $variant) < $MAX_WIN))) {
+        for (my $k = scalar(@variants)-1; $k >= 0; $k--) {
+            my $kidref = $variants[$k];
+            die unless (scalar(@{$kidref})==5);
+            (my $pid,my $newsh,my $tmpdir,my $variant,my $delta_result) = @{$kidref};
+            next unless ($pid == -1);
+            print "$pid, $newsh, $tmpdir, $variant, $delta_result\n" if $DEBUG_SMP;
+            if ($delta_result &&
+                (!defined $MAX_WIN || ((-s $fn) - (-s $variant) < $MAX_WIN))) {
 		# now that the delta test succeeded, this becomes our
 		# new best version
 
@@ -733,15 +735,26 @@ sub delta_pass ($) {
 		print_pct();
 		print "timestamp ".time()." size ".(-s $fn)."\n"
 		    if $TIMING;
+                # Exit the loop as killem will destoy our data structures such
+                # as @variants.
+                last;
 	    } else {
 		print "delta test failure\n" if $DEBUG;
 		$since_success++;
 		$method_failed{$delta_method." :: ".$delta_arg}++;
 	    }
 	    print "[${pass_num} ${delta_method} :: ${delta_arg}] " if $DEBUG;
-	    File::Path::remove_tree ($tmpdir, {verbose => 0, safe => 0, error => \my $err})
-		unless $SAVE_TEMPS;
-	}
+            # If we take the delta test succeeds branch we don't need to clean
+            # the data structures because killem() will do that for us.
+            die "Should not take this branch." if $delta_result;
+            # killem() will remove the temp folders if delta test succeeds,
+            # including the removal of the elements of @variants.
+            print "Removing ${tmpdir}\n" if !$SAVE_TEMPS && $DEBUG_SMP;
+            File::Path::remove_tree ($tmpdir, {verbose => 0, safe => 0, error => \my $err})
+                unless $SAVE_TEMPS;
+            print "Splicing the ${k}-th element\n" if $DEBUG_SMP;
+            splice @variants, $k, 1;
+        }
 
 	# nasty heuristic for avoiding getting stuck by buggy passes
 	# that keep reporting success w/o making progress -- FIXME
