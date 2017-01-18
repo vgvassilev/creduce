@@ -1750,7 +1750,7 @@ bool RewriteUtils::removeClassDecls(const CXXRecordDecl *CXXRD)
     SourceRange Range = (*I)->getSourceRange();
     SourceLocation LocEnd;
     if ((*I)->isThisDeclarationADefinition()) {
-      LocEnd = (*I)->getRBraceLoc();
+      LocEnd = getRBraceLoc(*I);
       if (LocEnd.isValid())
         LocEnd = getLocationUntil(LocEnd, ';');
       else
@@ -1775,7 +1775,7 @@ bool RewriteUtils::removeClassTemplateDecls(const ClassTemplateDecl *TmplD)
     SourceRange Range = (*I)->getSourceRange();
     SourceLocation LocEnd;
     if (CXXRD->isThisDeclarationADefinition()) {
-      LocEnd = CXXRD->getRBraceLoc();
+      LocEnd = getRBraceLoc(CXXRD);
       LocEnd = getLocationUntil(LocEnd, ';');
     }
     else {
