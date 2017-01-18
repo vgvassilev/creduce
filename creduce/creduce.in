@@ -768,6 +768,8 @@ sub line_delta_pass ($) {
 
 my @all_methods = (
 
+    # Unconditionally empties the contents of files.
+    { "name" => "pass_empty_files", "arg" => "0",                    "pri" => 20000,"first_pass_pri" =>  0, },
     { "name" => "pass_include_includes", "arg" => "0",               "pri" => 100, },
     { "name" => "pass_includes", "arg" => "0",                       "pri" => 10000,"first_pass_pri" =>  0, },
     # Selectively remove preprocessor conditions.
