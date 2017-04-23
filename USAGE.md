@@ -18,7 +18,7 @@ Use ramdisk when working with many files.
   - OSX
      ```
      # The disk size is calculated as: desired_size * 2018. Eg. 256 * 2048 = 524288
-     diskutil erasevolume HFS+ 'RAM Disk' `hdiutil attach -nomount ram://524288`
+     diskutil erasevolume HFS+ 'RAMDisk1' `hdiutil attach -nomount ram://524288`
      # Disable system logs on this drive
      mdutil -i off /Volumes/RAMDisk1/
      cd /Volumes/RAMDisk1/
