@@ -744,7 +744,7 @@ sub delta_pass ($) {
 		$since_success++;
 		$method_failed{$delta_method." :: ".$delta_arg}++;
 	    }
-	    print "[${pass_num} ${delta_method} :: ${delta_arg}] " if $DEBUG;
+            print "[${pass_num} ${delta_method} :: ${delta_arg}] \n" if $DEBUG;
             # If we take the delta test succeeds branch we don't need to clean
             # the data structures because killem() will do that for us.
             die "Should not take this branch." if $delta_result;
