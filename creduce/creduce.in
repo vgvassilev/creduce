@@ -724,6 +724,20 @@ sub delta_pass ($) {
 		$state = call_advance_on_success ($delta_method, $variant, $delta_arg, $newsh);
 		File::Copy::copy ($variant, $fn) or die $!;
 
+                if ($delta_method eq "pass_empty_folders") {
+                    # Expand folders into files.
+                    my @files_to_move;
+                    find(sub {push @files_to_move, $File::Find::name if -f}, $tmpdir);
+                    print join("\n", @files_to_move) if $DEBUG;
+                    foreach my $f (@files_to_move) {
+                        my $relf = File::Spec->abs2rel($f, $tmpdir);
+                        my $origf = File::Spec->catfile($orig_dir, $relf);
+                        next if compare ($origf, $f) == 0;
+                        print "Copying back extra file $relf \n" if $DEBUG;
+                        File::Copy::copy ($f, $origf) or die $!;
+                    }
+                }
+
 		# nuke all ongoing speculation
 		killem ();
 
@@ -786,6 +800,7 @@ sub line_delta_pass ($) {
 my @all_methods = (
 
     # Unconditionally empties the contents of files.
+    { "name" => "pass_empty_folders", "arg" => "0",                  "pri" => 40000,"first_pass_pri" =>  0, },
     { "name" => "pass_empty_files", "arg" => "0",                    "pri" => 20000,"first_pass_pri" =>  0, },
     { "name" => "pass_include_includes", "arg" => "0",               "pri" => 100, },
     { "name" => "pass_includes", "arg" => "0",                       "pri" => 10000,"first_pass_pri" =>  0, },

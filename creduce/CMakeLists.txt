@@ -82,6 +82,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pass_clang.pm ${PROJECT_BINARY_DIR}/m
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pass_clang_binsrch.pm ${PROJECT_BINARY_DIR}/modules/ COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pass_clex.pm ${PROJECT_BINARY_DIR}/modules/ COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pass_comments.pm ${PROJECT_BINARY_DIR}/modules/ COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pass_empty_folders.pm ${PROJECT_BINARY_DIR}/modules/ COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pass_empty_files.pm ${PROJECT_BINARY_DIR}/modules/ COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pass_include_includes.pm ${PROJECT_BINARY_DIR}/modules/ COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/pass_includes.pm ${PROJECT_BINARY_DIR}/modules/ COPYONLY)
