@@ -618,6 +618,7 @@ sub delta_pass ($) {
 	my $stopped = 0;
 
       AGAIN:
+        print "Processing file $fn \n" if $DEBUG;
 
 	# create child processes until either:
 	# 1. we exhaust the concurrency budget
