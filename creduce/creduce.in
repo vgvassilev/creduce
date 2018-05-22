@@ -718,13 +718,13 @@ sub delta_pass ($) {
 		# now that the delta test succeeded, this becomes our
 		# new best version
 
-		# nuke all ongoing speculation
-		killem ();
-
 		# here is where we actually accept the new result: we
 		# need to grab both the file and the pass state
 		$state = call_advance_on_success ($delta_method, $variant, $delta_arg, $newsh);
 		File::Copy::copy ($variant, $fn) or die $!;
+
+		# nuke all ongoing speculation
+		killem ();
 
 		# we don't want to be stopped by a speculative transformation
 		$stopped = 0;
