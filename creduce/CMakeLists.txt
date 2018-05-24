@@ -37,7 +37,7 @@ endif(NOT TOPFORMFLAT)
 
 # Prepare creduce.pl
 set(perl "${PERL_EXECUTABLE}")
-set(perllibdir "'${PROJECT_BINARY_DIR}/modules', '${CMAKE_INSTALL_PREFIX}/modules'")
+set(perllibdir "\"${PROJECT_BINARY_DIR}/modules\", \"${CMAKE_INSTALL_PREFIX}/modules\"")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/creduce.in
   ${PROJECT_BINARY_DIR}/creduce
