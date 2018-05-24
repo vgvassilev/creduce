@@ -47,9 +47,9 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
   // files (and files with no extension) as C files and fail to build an AST.
   if (const char *Lang = getenv("CREDUCE_LANG")) {
     if (!strcmp(Lang, "CXX"))
-      IK = IK_CXX;
+      IK = InputKind::CXX;
     else if (!strcmp(Lang, "C"))
-      IK = IK_C;
+      IK = InputKind::C;
   }
 
   std::vector<const char*> Args;
@@ -61,20 +61,20 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
   else
     TargetOpts.Triple = LLVM_DEFAULT_TARGET_TRIPLE;
   llvm::Triple T(TargetOpts.Triple);
-
-  if ((IK == IK_C) || (IK == IK_PreprocessedC)) {
-    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_C, T, PPOpts);
+  auto Lang = IK.getLanguage();
+  if ((Lang == InputKind::C)) {
+    Invocation.setLangDefaults(ClangInstance->getLangOpts(), InputKind::C, T, PPOpts);
   }
-  else if ((IK == IK_CXX) || (IK == IK_PreprocessedCXX)) {
+  else if ((Lang == InputKind::CXX)) {
     // ISSUE: it might cause some problems when building AST
     // for a function which has a non-declared callee, e.g.,
     // It results an empty AST for the caller.
 
     Args.push_back("-x");
     Args.push_back("c++");
-    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_CXX, T, PPOpts);
+    Invocation.setLangDefaults(ClangInstance->getLangOpts(), InputKind::CXX, T, PPOpts);
   }
-  else if(IK == IK_OpenCL) {
+  else if(Lang == InputKind::OpenCL) {
     //Commandline parameters
     Args.push_back("-x");
     Args.push_back("cl");
@@ -94,7 +94,7 @@ bool TransformationManager::initializeCompilerInstance(std::string &ErrorMsg)
     Args.push_back("clc/clc.h");
     Args.push_back("-fno-builtin");
 
-    Invocation.setLangDefaults(ClangInstance->getLangOpts(), IK_OpenCL, T,
+    Invocation.setLangDefaults(ClangInstance->getLangOpts(), InputKind::OpenCL, T,
                                PPOpts);
   }
   else {
